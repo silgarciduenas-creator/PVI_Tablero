@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PVI — Tablero Ejecutivo 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F3EE;
+  --surface: #FDFCF9;
+  --border: #E2DDD5;
+  --text: #1A1714;
+  --muted: #7A7168;
+  --green: #2D6A4F;
+  --green-bg: #D8F3DC;
+  --amber: #B45309;
+  --amber-bg: #FEF3C7;
+  --red: #9B1C1C;
+  --red-bg: #FEE2E2;
+  --blue: #1E3A5F;
+  --blue-bg: #DBEAFE;
+  --accent: #C9A84C;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* HEADER */
+.header {
+  background: var(--text);
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--accent);
+}
+
+.header-left h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem;
+  color: var(--surface);
+  letter-spacing: -0.02em;
+}
+
+.header-left p {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.last-update {
+  font-size: 0.7rem;
+  color: #666;
+  font-family: 'DM Mono', monospace;
+}
+
+/* NAV TABS */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2.5rem;
+  display: flex;
+  gap: 0;
+}
+
+.nav-tab {
+  padding: 0.9rem 1.5rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  letter-spacing: 0.01em;
+}
+
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* MAIN */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem;
+}
+
+/* SEMÁFORO */
+.semaforo {
+  padding: 1.1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: 1px solid;
+  opacity: 0;
+  animation: fadeIn 0.4s 0.2s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.semaforo.green { background: var(--green-bg); border-color: #74C69D; color: var(--green); }
+.semaforo.amber { background: var(--amber-bg); border-color: #FCD34D; color: var(--amber); }
+.semaforo.red { background: var(--red-bg); border-color: #FCA5A5; color: var(--red); }
+
+.semaforo-icon { font-size: 1.2rem; }
+.semaforo-sub { font-size: 0.78rem; font-weight: 400; opacity: 0.8; margin-left: 4px; }
+
+/* KPI GRID */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  opacity: 0;
+  animation: fadeIn 0.4s forwards;
+}
+
+.kpi-card:nth-child(1) { animation-delay: 0.1s; }
+.kpi-card:nth-child(2) { animation-delay: 0.15s; }
+.kpi-card:nth-child(3) { animation-delay: 0.2s; }
+.kpi-card:nth-child(4) { animation-delay: 0.25s; }
+.kpi-card:nth-child(5) { animation-delay: 0.3s; }
+.kpi-card:nth-child(6) { animation-delay: 0.35s; }
+
+.kpi-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  font-family: 'DM Mono', monospace;
+}
+
+.kpi-value {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.kpi-value.green { color: var(--green); }
+.kpi-value.amber { color: var(--amber); }
+.kpi-value.red { color: var(--red); }
+
+.kpi-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* SECTION TITLE */
+.section-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* TWO COL */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* CARD */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+}
+
+.card h3 {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* FONDO CARD */
+.fondo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.fondo-row:last-child { border-bottom: none; }
+.fondo-row .lbl { color: var(--muted); }
+.fondo-row .val { font-weight: 500; font-family: 'DM Mono', monospace; }
+.fondo-row .val.green { color: var(--green); }
+.fondo-row .val.amber { color: var(--amber); }
+.fondo-row .val.red { color: var(--red); }
+
+/* PROGRESS */
+.progress-wrap { margin-top: 0.75rem; }
+.progress-track {
+  background: var(--border);
+  border-radius: 3px;
+  height: 5px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--green);
+  transition: width 0.8s ease;
+}
+.progress-fill.amber { background: var(--amber); }
+.progress-fill.red { background: var(--red); }
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+/* BAR CHART */
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+.bar-name { width: 110px; color: var(--muted); text-align: right; font-size: 0.78rem; flex-shrink: 0; }
+.bar-track { flex: 1; background: var(--border); border-radius: 3px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.bar-amt { width: 65px; text-align: right; font-weight: 500; font-family: 'DM Mono', monospace; font-size: 0.78rem; flex-shrink: 0; }
+
+/* ALERT LIST */
+.alert-list { display: flex; flex-direction: column; gap: 8px; }
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  border: 1px solid;
+}
+.alert-item.red { background: var(--red-bg); border-color: #FCA5A5; color: var(--red); }
+.alert-item.amber { background: var(--amber-bg); border-color: #FCD34D; color: var(--amber); }
+.alert-item.green { background: var(--green-bg); border-color: #74C69D; color: var(--green); }
+.alert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.alert-item.red .alert-dot { background: var(--red); }
+.alert-item.amber .alert-dot { background: var(--amber); }
+.alert-item.green .alert-dot { background: var(--green); }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.data-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+.data-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg); }
+
+/* BADGE */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  font-family: 'DM Mono', monospace;
+}
+.badge.aprov { background: var(--green-bg); color: var(--green); }
+.badge.rev { background: var(--blue-bg); color: var(--blue); }
+.badge.pend { background: var(--amber-bg); color: var(--amber); }
+.badge.obs { background: #FEE2E2; color: var(--red); }
+
+/* MONTH GRID */
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 1rem;
+}
+.month-cell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.month-cell.active { background: var(--green-bg); border-color: #74C69D; }
+.month-name { font-size: 0.7rem; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 4px; text-transform: uppercase; }
+.month-cell.active .month-name { color: var(--green); }
+.month-val { font-size: 0.82rem; font-weight: 500; font-family: 'DM Mono', monospace; }
+.month-cell.active .month-val { color: var(--green); }
+
+/* LOADING */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { font-size: 0.82rem; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+/* ERROR */
+.error-msg {
+  background: var(--red-bg);
+  border: 1px solid #FCA5A5;
+  color: var(--red);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* VIEW TOGGLE */
+.hidden { display: none; }
+
+/* ACUMULADO */
+.acum-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.acum-cell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+.acum-cell .a-label { font-size: 0.68rem; color: var(--muted); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.acum-cell .a-val { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--text); }
+.acum-cell.green .a-val { color: var(--green); }
+.acum-cell.amber .a-val { color: var(--amber); }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+@media (max-width: 768px) {
+  .main { padding: 1rem; }
+  .header { padding: 1rem; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .month-grid { grid-template-columns: repeat(4, 1fr); }
+  .acum-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>PVI — Tablero Ejecutivo</h1>
+    <p>Control operativo de gastos 2026</p>
+  </div>
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Datos en vivo
+    </div>
+    <div class="last-update" id="last-update">—</div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" onclick="setView('semana')">Esta semana</div>
+  <div class="nav-tab" onclick="setView('mes')">Mes en curso</div>
+  <div class="nav-tab" onclick="setView('acumulado')">Acumulado 2026</div>
+</div>
+
+<div class="main">
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+    <p>Cargando datos del sistema...</p>
+  </div>
+
+  <div id="content" class="hidden">
+    <!-- SEMÁFORO -->
+    <div class="semaforo" id="semaforo-bar">
+      <span class="semaforo-icon" id="semaforo-icon">●</span>
+      <span id="semaforo-text">Cargando...</span>
+    </div>
+
+    <!-- VISTA SEMANA -->
+    <div id="view-semana">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Gastado aprobado</div>
+          <div class="kpi-value green" id="k-aprobado">—</div>
+          <div class="kpi-sub">semana actual</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Pendiente de aprobar</div>
+          <div class="kpi-value amber" id="k-pendiente">—</div>
+          <div class="kpi-sub">en revisión</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total registrado</div>
+          <div class="kpi-value" id="k-total">—</div>
+          <div class="kpi-sub">esta semana</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Presupuesto semana</div>
+          <div class="kpi-value" id="k-presupuesto">—</div>
+          <div class="kpi-sub">Carlos + Jethro</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">% ejecutado</div>
+          <div class="kpi-value" id="k-pct">—</div>
+          <div class="kpi-sub">vs presupuesto</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Sin foto</div>
+          <div class="kpi-value red" id="k-sinfoto">—</div>
+          <div class="kpi-sub">requieren atención</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <h3>Carlos — fondo semana</h3>
+          <div class="fondo-row"><span class="lbl">Fondo asignado</span><span class="val" id="c-fondo">—</span></div>
+          <div class="fondo-row"><span class="lbl">Gastado (aprobado)</span><span class="val green" id="c-gastado">—</span></div>
+          <div class="fondo-row"><span class="lbl">Pendiente aprobar</span><span class="val amber" id="c-pendiente">—</span></div>
+          <div class="fondo-row"><span class="lbl">Repuesto por Tita</span><span class="val" id="c-repuesto">—</span></div>
+          <div class="fondo-row"><span class="lbl">Disponible</span><span class="val green" id="c-disponible">—</span></div>
+          <div class="fondo-row"><span class="lbl">Semáforo</span><span class="val" id="c-semaforo">—</span></div>
+          <div class="progress-wrap">
+            <div class="progress-track"><div class="progress-fill" id="c-progress" style="width:0%"></div></div>
+            <div class="progress-labels"><span id="c-pct-label">0%</span><span>del fondo usado</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Jethro — fondo semana</h3>
+          <div class="fondo-row"><span class="lbl">Fondo asignado</span><span class="val" id="j-fondo">—</span></div>
+          <div class="fondo-row"><span class="lbl">Gastado (aprobado)</span><span class="val green" id="j-gastado">—</span></div>
+          <div class="fondo-row"><span class="lbl">Pendiente aprobar</span><span class="val amber" id="j-pendiente">—</span></div>
+          <div class="fondo-row"><span class="lbl">Repuesto por Tita</span><span class="val" id="j-repuesto">—</span></div>
+          <div class="fondo-row"><span class="lbl">Disponible</span><span class="val green" id="j-disponible">—</span></div>
+          <div class="fondo-row"><span class="lbl">Semáforo</span><span class="val" id="j-semaforo">—</span></div>
+          <div class="progress-wrap">
+            <div class="progress-track"><div class="progress-fill" id="j-progress" style="width:0%"></div></div>
+            <div class="progress-labels"><span id="j-pct-label">0%</span><span>del fondo usado</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <h3>Gasto por negocio — semana</h3>
+          <div id="negocio-bars">
+            <div style="color:var(--muted);font-size:0.8rem;padding:1rem 0;text-align:center;">Cargando...</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Alertas activas</h3>
+          <div class="alert-list" id="alert-list">
+            <div style="color:var(--muted);font-size:0.8rem;padding:1rem 0;text-align:center;">Cargando...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Últimos gastos registrados</div>
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Descripción</th>
+              <th>Negocio</th>
+              <th>Responsable</th>
+              <th>Monto</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="gastos-tbody">
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VISTA MES -->
+    <div id="view-mes" class="hidden">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Gasto real (mes)</div>
+          <div class="kpi-value green" id="m-gastado">—</div>
+          <div class="kpi-sub">mes en curso</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Presupuesto mes</div>
+          <div class="kpi-value" id="m-presupuesto">—</div>
+          <div class="kpi-sub">estimado</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Reposición real</div>
+          <div class="kpi-value" id="m-reposicion">—</div>
+          <div class="kpi-sub">lo que entregó Tita</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Diferencia</div>
+          <div class="kpi-value" id="m-diferencia">—</div>
+          <div class="kpi-sub">repuesto vs gastado</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">% ejecutado</div>
+          <div class="kpi-value" id="m-pct">—</div>
+          <div class="kpi-sub">vs presupuesto</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Semanas activas</div>
+          <div class="kpi-value" id="m-semanas">—</div>
+          <div class="kpi-sub">en este mes</div>
+        </div>
+      </div>
+
+      <div class="section-title">Gasto mensual por negocio</div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div id="negocio-bars-mes">
+          <div style="color:var(--muted);font-size:0.8rem;padding:1rem 0;text-align:center;">Cargando...</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <h3>Operativo vs inversión</h3>
+          <div id="tipo-gasto-mes">
+            <div style="color:var(--muted);font-size:0.8rem;padding:1rem 0;">Cargando...</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Gasto por responsable</h3>
+          <div id="responsable-mes">
+            <div style="color:var(--muted);font-size:0.8rem;padding:1rem 0;">Cargando...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISTA ACUMULADO -->
+    <div id="view-acumulado" class="hidden">
+      <div class="section-title">Resumen acumulado 2026</div>
+      <div class="acum-grid" style="margin-bottom:1.5rem;">
+        <div class="acum-cell green">
+          <div class="a-label">Gastado aprobado</div>
+          <div class="a-val" id="a-aprobado">—</div>
+        </div>
+        <div class="acum-cell amber">
+          <div class="a-label">Pendiente año</div>
+          <div class="a-val" id="a-pendiente">—</div>
+        </div>
+        <div class="acum-cell">
+          <div class="a-label">Total registrado</div>
+          <div class="a-val" id="a-total">—</div>
+        </div>
+        <div class="acum-cell">
+          <div class="a-label">Operativo</div>
+          <div class="a-val" id="a-operativo">—</div>
+        </div>
+        <div class="acum-cell amber">
+          <div class="a-label">Inversión</div>
+          <div class="a-val" id="a-inversion">—</div>
+        </div>
+      </div>
+
+      <div class="section-title">Gasto mensual — todos los negocios</div>
+      <div class="month-grid" id="month-grid">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="card">
+        <h3>Detalle por negocio — año completo</h3>
+        <div id="negocio-bars-anual"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_KEY = 'AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg';
+const SHEET_ID = '1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk';
+const BASE = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
+
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const NEGOCIOS_COLORS = ['#2D6A4F','#1E3A5F','#B45309','#9B1C1C','#5B21B6','#0F766E','#92400E','#1D4ED8'];
+
+let allData = {};
+let currentView = 'semana';
+
+function parseMonto(val) {
+  if (val === null || val === undefined || val === '') return 0;
+  // Remove $, spaces, then replace dots used as thousands separators
+  // Mexican format: $4.567 = 4567, $12.000 = 12000
+  let s = val.toString().replace(/\$/g,'').replace(/\s/g,'').trim();
+  // If there's a comma, it's decimal separator (e.g. 4,567.89) - handle both formats
+  if (s.includes(',') && s.includes('.')) {
+    // Has both: assume comma=thousands, dot=decimal (international)
+    s = s.replace(/,/g,'');
+  } else if (s.includes('.')) {
+    // Only dots: in MX format dots are thousands separators
+    // BUT only if the part after last dot has 3 digits (e.g. 4.567 = 4567)
+    const parts = s.split('.');
+    const lastPart = parts[parts.length - 1];
+    if (lastPart.length === 3) {
+      s = s.replace(/\./g,''); // remove all dots = thousands separators
+    }
+    // if last part has 1-2 digits, it's a decimal (e.g. 4.5 = 4.5)
+  } else if (s.includes(',')) {
+    // Only commas: MX decimal separator
+    s = s.replace(',', '.');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function fmt(n) {
+  const num = typeof n === 'string' ? parseMonto(n) : (n || 0);
+  if (isNaN(num)) return '$0';
+  return '$' + Math.round(num).toLocaleString('es-MX');
+}
+
+function pct(n) {
+  if (!n || isNaN(n)) return '0.0%';
+  return (Number(n)*100).toFixed(1) + '%';
+}
+
+async function fetchRange(range) {
+  const url = `${BASE}/${encodeURIComponent(range)}?key=${API_KEY}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
+  const data = await res.json();
+  return data.values || [];
+}
+
+async function loadAllData() {
+  const [gastosRaw, semanaRaw, resumenRaw, reposicionesRaw] = await Promise.all([
+    fetchRange('GASTOS!A6:T205'),
+    fetchRange('SEMANA_ACTIVA!B1:F50'),
+    fetchRange('RESUMEN_MENSUAL!B5:O42'),
+    fetchRange('Reposiciones!C2:E200'),
+  ]);
+
+  allData.gastos = gastosRaw;
+  allData.semana = semanaRaw;
+  allData.resumen = resumenRaw;
+  allData.reposiciones = reposicionesRaw;
+}
+
+function getWeekNum(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 4 - (d.getDay()||7));
+  const yearStart = new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  // Handle DD/MM/YYYY HH:MM:SS format from Google Sheets
+  const s = str.toString().trim();
+  // Try DD/MM/YYYY or DD/MM/YYYY HH:MM:SS
+  const dmyMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmyMatch) {
+    const d = new Date(dmyMatch[3], dmyMatch[2]-1, dmyMatch[1]);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function processGastos() {
+  const rows = allData.gastos || [];
+  const now = new Date();
+  const currentWeek = getWeekNum(now);
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  let semana = { aprobado:0, pendiente:0, total:0, sinFoto:0, sinEstado:0, tardio:0, slaVencido:0 };
+  let semanaNegocios = {};
+  let semanaCarlosAprov=0, semanaCarlosPend=0, semanaJethroAprov=0, jethroPend=0;
+  let mesGastado=0, mesNegocios={}, mesTipo={op:0,inv:0}, mesCarlos=0, mesJethro=0;
+  let anioAprobado=0, anioPendiente=0, anioTotal=0, anioOp=0, anioInv=0;
+  let anioNegocios={};
+  let mesesData = Array(12).fill(0);
+  let lastGastos = [];
+
+  rows.forEach(row => {
+    const fecha = parseDate(row[2]);
+    if (!fecha) return;
+    const week = getWeekNum(fecha);
+    const month = fecha.getMonth() + 1;
+    const year = fecha.getFullYear();
+    const monto = parseMonto(row[9]);
+    const estado = (row[16] || '').toString().trim();
+    const negocio = (row[4] || '').toString().trim();
+    const tipo = (row[5] || '').toString().trim();
+    const responsable = (row[3] || '').toString().trim();
+    const foto = (row[11] || '').toString().trim();
+    const alerta = (row[14] || '').toString().trim();
+    const sla = (row[19] || '').toString().trim();
+
+    if (year !== currentYear) return;
+
+    // Año
+    anioTotal += monto;
+    if (estado.includes('Aprobado')) anioAprobado += monto;
+    else anioPendiente += monto;
+    if (tipo.includes('operativo')) anioOp += monto;
+    if (tipo.includes('activo') || tipo.includes('Inversión')) anioInv += monto;
+    anioNegocios[negocio] = (anioNegocios[negocio]||0) + monto;
+    if (month >= 1 && month <= 12) mesesData[month-1] += monto;
+
+    // Mes
+    if (month === currentMonth) {
+      mesGastado += monto;
+      mesNegocios[negocio] = (mesNegocios[negocio]||0) + monto;
+      if (tipo.includes('operativo')) mesTipo.op += monto;
+      if (tipo.includes('activo') || tipo.includes('Inversión')) mesTipo.inv += monto;
+      if (responsable === 'Carlos') mesCarlos += monto;
+      if (responsable === 'Jethro') mesJethro += monto;
+    }
+
+    // Semana
+    if (week === currentWeek) {
+      semana.total += monto;
+      if (estado.includes('Aprobado')) semana.aprobado += monto;
+      else semana.pendiente += monto;
+      if (foto === '🔴 SIN FOTO' || (row[15]||'').includes('SIN FOTO')) semana.sinFoto++;
+      if (!estado) semana.sinEstado++;
+      if (alerta && alerta.includes('TARDÍO')) semana.tardio++;
+      if (sla && sla.includes('VENCIDO')) semana.slaVencido++;
+      semanaNegocios[negocio] = (semanaNegocios[negocio]||0) + monto;
+      if (responsable === 'Carlos') {
+        if (estado.includes('Aprobado')) semanaCarlosAprov += monto;
+        else semanaCarlosPend += monto;
+      }
+      if (responsable === 'Jethro') {
+        if (estado.includes('Aprobado')) semanaJethroAprov += monto;
+        else jethroPend += monto;
+      }
+
+      lastGastos.push({
+        fecha: fecha.toLocaleDateString('es-MX', {day:'2-digit',month:'short'}),
+        desc: row[7] || '—',
+        negocio,
+        responsable,
+        monto,
+        estado
+      });
+    }
+  });
+
+  lastGastos.sort((a,b) => b.monto - a.monto);
+
+  return {
+    semana, semanaNegocios,
+    semanaCarlosAprov, semanaCarlosPend,
+    semanaJethroAprov, semanaJethroPend: jethroPend,
+    mesGastado, mesNegocios, mesTipo, mesCarlos, mesJethro,
+    anioAprobado, anioPendiente, anioTotal, anioOp, anioInv, anioNegocios,
+    mesesData, lastGastos
+  };
+}
+
+function getSemanaActiva() {
+  const rows = allData.semana || [];
+  let result = { carlosFondo:25000, jethroFondo:25000, carlosRepuesto:0, jethroRepuesto:0 };
+  rows.forEach(r => {
+    const label = (r[1]||'').toString().trim();
+    const val = parseFloat((r[3]||'').toString().replace(/[$,]/g,'')) || 0;
+    if (label.includes('Carlos') && label.includes('Fondo')) result.carlosFondo = val || 25000;
+    if (label.includes('Jethro') && label.includes('Fondo')) result.jethroFondo = val || 25000;
+    if (label.includes('Repuesto') && label.includes('Carlos')) result.carlosRepuesto = val;
+    if (label.includes('Repuesto') && label.includes('Jethro')) result.jethroRepuesto = val;
+  });
+  return result;
+}
+
+function getReposicionMes() {
+  const rows = allData.reposiciones || [];
+  const now = new Date();
+  let total = 0;
+  rows.forEach(r => {
+    const fecha = parseDate(r[0]);
+    if (!fecha) return;
+    if (fecha.getMonth()+1 === now.getMonth()+1 && fecha.getFullYear() === now.getFullYear()) {
+      total += parseMonto(r[2]);
+    }
+  });
+  return total;
+}
+
+function getResumenMes() {
+  const rows = allData.resumen || [];
+  const now = new Date();
+  const mesIdx = now.getMonth() + 1;
+  let presupuesto = 0, semanas = 0;
+  rows.forEach(r => {
+    const label = (r[0]||'').toString().trim();
+    if (label.includes('Semanas')) semanas = parseFloat(r[mesIdx]) || 4;
+    if (label.includes('Presupuesto')) presupuesto = parseFloat((r[mesIdx]||'').toString().replace(/[$,.]/g,'')) || 0;
+  });
+  if (!presupuesto && semanas) presupuesto = semanas * 50000;
+  return { presupuesto, semanas };
+}
+
+function renderBarChart(containerId, data, maxVal, colors) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const sorted = Object.entries(data).filter(([k])=>k).sort((a,b)=>b[1]-a[1]);
+  if (!sorted.length) { el.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:1rem 0;text-align:center;">Sin datos esta semana</div>'; return; }
+  el.innerHTML = sorted.map(([name, val], i) => {
+    const pctVal = maxVal ? Math.max(3, (val/maxVal)*100) : 0;
+    const color = colors[i % colors.length];
+    return `<div class="bar-row">
+      <span class="bar-name">${name}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pctVal}%;background:${color}"></div></div>
+      <span class="bar-amt">${fmt(val)}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderSemana(stats, sa) {
+  // KPIs
+  document.getElementById('k-aprobado').textContent = fmt(stats.semana.aprobado);
+  document.getElementById('k-pendiente').textContent = fmt(stats.semana.pendiente);
+  document.getElementById('k-total').textContent = fmt(stats.semana.total);
+  const presupSem = (sa.carlosFondo||25000) + (sa.jethroFondo||25000);
+  document.getElementById('k-presupuesto').textContent = fmt(presupSem);
+  document.getElementById('k-pct').textContent = presupSem ? pct(stats.semana.total/presupSem) : '—';
+  document.getElementById('k-sinfoto').textContent = stats.semana.sinFoto + ' gastos';
+
+  // Carlos
+  const cDisp = (sa.carlosFondo||25000) - stats.semanaCarlosAprov + (sa.carlosRepuesto||0);
+  document.getElementById('c-fondo').textContent = fmt(sa.carlosFondo||25000);
+  document.getElementById('c-gastado').textContent = fmt(stats.semanaCarlosAprov);
+  document.getElementById('c-pendiente').textContent = fmt(stats.semanaCarlosPend);
+  document.getElementById('c-repuesto').textContent = fmt(sa.carlosRepuesto||0);
+  document.getElementById('c-disponible').textContent = fmt(cDisp);
+  const cSem = cDisp < 5000 ? '🔴 CRÍTICO' : cDisp < 10000 ? '🟡 ALERTA' : '🟢 OK';
+  document.getElementById('c-semaforo').textContent = cSem;
+  const cPct = Math.min(100, ((stats.semanaCarlosAprov + stats.semanaCarlosPend)/(sa.carlosFondo||25000))*100);
+  document.getElementById('c-progress').style.width = cPct + '%';
+  document.getElementById('c-progress').className = 'progress-fill' + (cPct>80?' red':cPct>50?' amber':'');
+  document.getElementById('c-pct-label').textContent = cPct.toFixed(0) + '%';
+
+  // Jethro
+  const jDisp = (sa.jethroFondo||25000) - stats.semanaJethroAprov + (sa.jethroRepuesto||0);
+  document.getElementById('j-fondo').textContent = fmt(sa.jethroFondo||25000);
+  document.getElementById('j-gastado').textContent = fmt(stats.semanaJethroAprov);
+  document.getElementById('j-pendiente').textContent = fmt(stats.semanaJethroPend);
+  document.getElementById('j-repuesto').textContent = fmt(sa.jethroRepuesto||0);
+  document.getElementById('j-disponible').textContent = fmt(jDisp);
+  const jSem = jDisp < 5000 ? '🔴 CRÍTICO' : jDisp < 10000 ? '🟡 ALERTA' : '🟢 OK';
+  document.getElementById('j-semaforo').textContent = jSem;
+  const jPct = Math.min(100, ((stats.semanaJethroAprov + stats.semanaJethroPend)/(sa.jethroFondo||25000))*100);
+  document.getElementById('j-progress').style.width = jPct + '%';
+  document.getElementById('j-progress').className = 'progress-fill' + (jPct>80?' red':jPct>50?' amber':'');
+  document.getElementById('j-pct-label').textContent = jPct.toFixed(0) + '%';
+
+  // Negocios
+  const maxNeg = Math.max(...Object.values(stats.semanaNegocios), 1);
+  renderBarChart('negocio-bars', stats.semanaNegocios, maxNeg, NEGOCIOS_COLORS);
+
+  // Alertas
+  const alerts = [];
+  if (stats.semana.slaVencido > 0) alerts.push({type:'red', msg:`${stats.semana.slaVencido} gastos con SLA vencido — Ana tiene pendientes`});
+  if (stats.semana.sinFoto > 0) alerts.push({type:'red', msg:`${stats.semana.sinFoto} gastos sin foto de comprobante`});
+  if (stats.semana.tardio > 0) alerts.push({type:'amber', msg:`${stats.semana.tardio} registros tardíos (+24hrs)`});
+  if (stats.semana.sinEstado > 0) alerts.push({type:'amber', msg:`${stats.semana.sinEstado} gastos sin estado asignado`});
+  if (cDisp < 5000) alerts.push({type:'red', msg:`Carlos tiene saldo crítico — disponible ${fmt(cDisp)}`});
+  if (jDisp < 5000) alerts.push({type:'red', msg:`Jethro tiene saldo crítico — disponible ${fmt(jDisp)}`});
+  if (!alerts.length) alerts.push({type:'green', msg:'Todo bajo control esta semana'});
+
+  document.getElementById('alert-list').innerHTML = alerts.map(a =>
+    `<div class="alert-item ${a.type}"><div class="alert-dot"></div><span>${a.msg}</span></div>`
+  ).join('');
+
+  // Semáforo global
+  const bar = document.getElementById('semaforo-bar');
+  const icon = document.getElementById('semaforo-icon');
+  const txt = document.getElementById('semaforo-text');
+  if (stats.semana.slaVencido > 0 || stats.semana.sinFoto > 2) {
+    bar.className = 'semaforo red';
+    icon.textContent = '●';
+    txt.innerHTML = 'Requiere atención <span class="semaforo-sub">— hay alertas críticas esta semana</span>';
+  } else if (stats.semana.pendiente > 0 || stats.semana.tardio > 0) {
+    bar.className = 'semaforo amber';
+    icon.textContent = '●';
+    txt.innerHTML = 'Hay pendientes <span class="semaforo-sub">— gastos en revisión o con observación</span>';
+  } else {
+    bar.className = 'semaforo green';
+    icon.textContent = '●';
+    txt.innerHTML = 'Todo bajo control <span class="semaforo-sub">— sistema al día esta semana</span>';
+  }
+
+  // Tabla gastos
+  const tbody = document.getElementById('gastos-tbody');
+  if (!stats.lastGastos.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem;">Sin gastos esta semana</td></tr>';
+    return;
+  }
+  tbody.innerHTML = stats.lastGastos.slice(0,8).map(g => {
+    const estadoClass = g.estado.includes('Aprobado') ? 'aprov' : g.estado.includes('Revisado') ? 'rev' : g.estado.includes('Observación') ? 'obs' : 'pend';
+    const estadoLabel = g.estado || 'Pendiente';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted)">${g.fecha}</td>
+      <td>${g.desc}</td>
+      <td style="color:var(--muted)">${g.negocio}</td>
+      <td style="color:var(--muted)">${g.responsable}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:500">${fmt(g.monto)}</td>
+      <td><span class="badge ${estadoClass}">${estadoLabel}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMes(stats, resumen, reposicion) {
+  document.getElementById('m-gastado').textContent = fmt(stats.mesGastado);
+  document.getElementById('m-presupuesto').textContent = fmt(resumen.presupuesto);
+  document.getElementById('m-reposicion').textContent = fmt(reposicion);
+  document.getElementById('m-diferencia').textContent = fmt(reposicion - stats.mesGastado);
+  document.getElementById('m-pct').textContent = resumen.presupuesto ? pct(stats.mesGastado/resumen.presupuesto) : '—';
+  document.getElementById('m-semanas').textContent = (resumen.semanas||'—') + ' semanas';
+
+  const maxMes = Math.max(...Object.values(stats.mesNegocios), 1);
+  renderBarChart('negocio-bars-mes', stats.mesNegocios, maxMes, NEGOCIOS_COLORS);
+
+  const tipoEl = document.getElementById('tipo-gasto-mes');
+  const tipoTotal = stats.mesTipo.op + stats.mesTipo.inv;
+  tipoEl.innerHTML = `
+    <div class="fondo-row"><span class="lbl">Gasto operativo</span><span class="val green">${fmt(stats.mesTipo.op)}</span></div>
+    <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" style="width:${tipoTotal?((stats.mesTipo.op/tipoTotal)*100).toFixed(0):0}%"></div></div></div>
+    <div class="fondo-row" style="margin-top:0.75rem"><span class="lbl">Inversión / activo</span><span class="val amber">${fmt(stats.mesTipo.inv)}</span></div>
+    <div class="progress-wrap"><div class="progress-track"><div class="progress-fill amber" style="width:${tipoTotal?((stats.mesTipo.inv/tipoTotal)*100).toFixed(0):0}%"></div></div></div>
+  `;
+
+  const respEl = document.getElementById('responsable-mes');
+  respEl.innerHTML = `
+    <div class="fondo-row"><span class="lbl">Carlos</span><span class="val">${fmt(stats.mesCarlos)}</span></div>
+    <div class="fondo-row"><span class="lbl">Jethro</span><span class="val">${fmt(stats.mesJethro)}</span></div>
+    <div class="fondo-row"><span class="lbl" style="font-weight:500;color:var(--text)">Total</span><span class="val" style="font-weight:500">${fmt(stats.mesCarlos+stats.mesJethro)}</span></div>
+  `;
+}
+
+function renderAcumulado(stats) {
+  document.getElementById('a-aprobado').textContent = fmt(stats.anioAprobado);
+  document.getElementById('a-pendiente').textContent = fmt(stats.anioPendiente);
+  document.getElementById('a-total').textContent = fmt(stats.anioTotal);
+  document.getElementById('a-operativo').textContent = fmt(stats.anioOp);
+  document.getElementById('a-inversion').textContent = fmt(stats.anioInv);
+
+  const now = new Date();
+  const mesActual = now.getMonth();
+  const monthGrid = document.getElementById('month-grid');
+  monthGrid.innerHTML = MESES.map((m, i) => {
+    const val = stats.mesesData[i] || 0;
+    const isActive = i === mesActual;
+    return `<div class="month-cell${isActive?' active':''}">
+      <div class="month-name">${m}</div>
+      <div class="month-val">${val ? fmt(val) : '—'}</div>
+    </div>`;
+  }).join('');
+
+  const maxAnio = Math.max(...Object.values(stats.anioNegocios), 1);
+  renderBarChart('negocio-bars-anual', stats.anioNegocios, maxAnio, NEGOCIOS_COLORS);
+}
+
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.nav-tab').forEach((t,i) => {
+    t.classList.toggle('active', (['semana','mes','acumulado'][i]) === v);
+  });
+  document.getElementById('view-semana').classList.toggle('hidden', v !== 'semana');
+  document.getElementById('view-mes').classList.toggle('hidden', v !== 'mes');
+  document.getElementById('view-acumulado').classList.toggle('hidden', v !== 'acumulado');
+}
+
+async function init() {
+  try {
+    await loadAllData();
+
+    const stats = processGastos();
+    const sa = getSemanaActiva();
+    const resumen = getResumenMes();
+    const reposicion = getReposicionMes();
+
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+
+    renderSemana(stats, sa);
+    renderMes(stats, resumen, reposicion);
+    renderAcumulado(stats);
+
+    const now = new Date();
+    document.getElementById('last-update').textContent =
+      'Actualizado ' + now.toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+
+  } catch(err) {
+    document.getElementById('loading').innerHTML =
+      `<div class="error-msg">Error al cargar datos: ${err.message}<br><small>Verifica que el Sheet sea público y la API Key sea válida.</small></div>`;
+    console.error(err);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
