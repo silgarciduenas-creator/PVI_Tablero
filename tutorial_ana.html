@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PVI — Guía Ana</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #F7F9FC;
+  --ink:        #111827;
+  --ink2:       #374151;
+  --ink3:       #9CA3AF;
+  --card:       #FFFFFF;
+  --border:     #E5E7EB;
+  --blue:       #1D4ED8;
+  --blue-light: #DBEAFE;
+  --blue-mid:   #BFDBFE;
+  --green:      #065F46;
+  --green-light:#D1FAE5;
+  --amber:      #92400E;
+  --amber-light:#FEF3C7;
+  --red:        #991B1B;
+  --red-light:  #FEE2E2;
+  --purple:     #4C1D95;
+  --purple-light:#EDE9FE;
+  --r:          10px;
+  --shadow:     0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.6;}
+
+/* ── PROGRESS ── */
+.prog-bar{position:fixed;top:0;left:0;right:0;height:3px;background:var(--border);z-index:100;}
+.prog-fill{height:100%;background:var(--blue);transition:width .3s ease;}
+
+/* ── HERO ── */
+.hero{
+  background:linear-gradient(150deg,#1E3A8A 0%,#1D4ED8 60%,#3B82F6 100%);
+  padding:4rem 1.5rem 3rem;text-align:center;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-80px;right:-60px;
+  width:300px;height:300px;border-radius:50%;
+  background:rgba(255,255,255,.04);pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;bottom:-40px;left:-40px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,.03);pointer-events:none;
+}
+.hero-badge{
+  display:inline-block;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;
+  color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.2);
+  padding:4px 14px;border-radius:20px;margin-bottom:1.25rem;
+}
+.hero-title{
+  font-family:'Fraunces',serif;font-size:2.4rem;font-weight:300;
+  color:#fff;line-height:1.15;margin-bottom:.75rem;
+}
+.hero-title em{font-style:italic;color:#93C5FD;}
+.hero-sub{font-size:.9rem;color:rgba(255,255,255,.65);max-width:360px;margin:0 auto 2rem;font-weight:300;}
+.hero-chips{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;}
+.chip{font-size:.72rem;padding:5px 13px;border-radius:20px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);}
+
+/* ── SLA PILL HERO ── */
+.sla-pill{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  border-radius:20px;padding:.5rem 1.1rem;margin-top:1.5rem;
+  font-size:.8rem;font-weight:600;color:#fff;
+}
+.sla-pill .clock{font-size:1rem;}
+
+/* ── NAV ── */
+.nav-sticky{
+  position:sticky;top:3px;z-index:90;
+  padding:.75rem 1.25rem;
+  background:rgba(247,249,252,.93);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;
+}
+.nav-sticky::-webkit-scrollbar{display:none}
+.nav-pill{
+  flex-shrink:0;font-size:.72rem;font-weight:500;padding:5px 14px;
+  border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--ink2);cursor:pointer;
+  text-decoration:none;transition:.15s;white-space:nowrap;
+}
+.nav-pill:hover,.nav-pill.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+/* ── MAIN ── */
+.main{max-width:620px;margin:0 auto;padding:2rem 1.25rem 5rem;}
+
+/* ── SECTION ── */
+.section{margin-bottom:3rem;}
+.section-label{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;}
+.section-num{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Fraunces',serif;font-size:1rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.section-title{font-family:'Fraunces',serif;font-size:1.25rem;font-weight:500;color:var(--ink);}
+.section-intro{font-size:.88rem;color:var(--ink2);margin-bottom:1.25rem;padding-left:2.75rem;line-height:1.65;}
+
+/* ── STEPS ── */
+.step-list{display:flex;flex-direction:column;gap:.75rem;}
+.step{display:flex;gap:1rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.1rem 1.1rem 1rem;box-shadow:var(--shadow);position:relative;}
+.step::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;background:var(--border);}
+.step.blue::before{background:var(--blue);}
+.step.green::before{background:var(--green);}
+.step.amber::before{background:var(--amber);}
+.step.red::before{background:var(--red);}
+.step.purple::before{background:var(--purple);}
+.step-num{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;margin-top:1px;}
+.step.blue .step-num{background:var(--blue-light);color:var(--blue);}
+.step.green .step-num{background:var(--green-light);color:var(--green);}
+.step.amber .step-num{background:var(--amber-light);color:var(--amber);}
+.step.red .step-num{background:var(--red-light);color:var(--red);}
+.step.purple .step-num{background:var(--purple-light);color:var(--purple);}
+.step-action{font-size:.88rem;font-weight:500;color:var(--ink);margin-bottom:.2rem;}
+.step-detail{font-size:.8rem;color:var(--ink2);line-height:1.55;}
+.step-detail strong{color:var(--ink);font-weight:600;}
+.step-detail code{font-family:'DM Sans',monospace;background:var(--border);padding:1px 5px;border-radius:3px;font-size:.78rem;}
+
+/* ── INFO CARD ── */
+.info-card{border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:.85rem;border:1px solid;display:flex;gap:.85rem;align-items:flex-start;}
+.info-card.tip{background:var(--blue-light);border-color:var(--blue-mid);color:var(--blue);}
+.info-card.rule{background:var(--green-light);border-color:#6EE7B7;color:var(--green);}
+.info-card.warn{background:var(--amber-light);border-color:#FCD34D;color:var(--amber);}
+.info-card.alert{background:var(--red-light);border-color:#FCA5A5;color:var(--red);}
+.info-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.info-text{font-size:.82rem;line-height:1.6;}
+.info-text strong{font-weight:600;}
+
+/* ── ACTION BUTTONS ── */
+.action-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.65rem;margin:.85rem 0;}
+.action-btn{border-radius:var(--r);padding:.9rem .8rem;text-align:center;border:1px solid;cursor:default;}
+.action-btn.ok{background:var(--green-light);border-color:#6EE7B7;}
+.action-btn.obs{background:var(--amber-light);border-color:#FCD34D;}
+.action-btn.dev{background:var(--blue-light);border-color:var(--blue-mid);}
+.action-icon{font-size:1.4rem;margin-bottom:.35rem;}
+.action-name{font-size:.75rem;font-weight:600;color:var(--ink);margin-bottom:.2rem;}
+.action-desc{font-size:.65rem;color:var(--ink2);line-height:1.4;}
+
+/* ── STATUS FLOW ── */
+.status-flow{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin:.85rem 0;}
+.stt{display:flex;align-items:center;gap:.4rem;padding:.45rem .9rem;border-radius:20px;font-size:.75rem;font-weight:500;border:1px solid;}
+.stt.pend{background:var(--amber-light);border-color:#FCD34D;color:var(--amber);}
+.stt.rev{background:var(--blue-light);border-color:var(--blue-mid);color:var(--blue);}
+.stt.aprov{background:var(--green-light);border-color:#6EE7B7;color:var(--green);}
+.stt.obs{background:var(--red-light);border-color:#FCA5A5;color:var(--red);}
+.flow-arrow{font-size:.9rem;color:var(--ink3);}
+
+/* ── SLA BOX ── */
+.sla-box{
+  background:linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 100%);
+  border-radius:var(--r);padding:1.5rem 1.75rem;margin:1rem 0;
+  display:flex;align-items:center;gap:1.5rem;
+}
+.sla-num{font-family:'Fraunces',serif;font-size:3.5rem;font-weight:300;color:#fff;line-height:1;flex-shrink:0;}
+.sla-info{flex:1;}
+.sla-unit{font-size:.85rem;font-weight:500;color:#93C5FD;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem;}
+.sla-detail{font-size:.8rem;color:rgba(255,255,255,.65);line-height:1.55;}
+
+/* ── CHECKLIST ── */
+.checklist{display:flex;flex-direction:column;gap:.5rem;margin:.75rem 0;}
+.check-item{display:flex;align-items:flex-start;gap:.7rem;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;font-size:.83rem;color:var(--ink2);box-shadow:var(--shadow);}
+.check-box{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.check-box.done{background:var(--blue);border-color:var(--blue);}
+.check-box.done::after{content:'✓';color:#fff;font-size:.65rem;font-weight:700;}
+.check-text{flex:1;line-height:1.5;}
+.check-text strong{color:var(--ink);font-weight:600;}
+
+/* ── HIGHLIGHT ── */
+.highlight{background:var(--blue-light);border-left:3px solid var(--blue);border-radius:0 var(--r) var(--r) 0;padding:.85rem 1.1rem;font-size:.83rem;color:var(--ink2);margin:.75rem 0;line-height:1.6;}
+.highlight strong{color:var(--ink);}
+
+/* ── ROLE TABLE ── */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem;}
+.role-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;box-shadow:var(--shadow);}
+.role-name{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:.35rem;}
+.role-action{font-size:.82rem;color:var(--ink);line-height:1.5;}
+
+/* ── MASTER RULE ── */
+.master-rule{background:linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 100%);border-radius:var(--r);padding:1.75rem;text-align:center;margin:1.5rem 0;}
+.master-rule p{font-family:'Fraunces',serif;font-style:italic;font-size:1.05rem;color:#fff;line-height:1.65;}
+.master-rule span{color:#93C5FD;}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:2rem 0;}
+
+/* ── COLS ── */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:.75rem 0;}
+.col-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem;box-shadow:var(--shadow);}
+.col-box-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.09em;color:var(--ink3);margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+.col-box ul{list-style:none;display:flex;flex-direction:column;gap:.35rem;}
+.col-box li{font-size:.8rem;color:var(--ink2);display:flex;gap:.5rem;align-items:flex-start;}
+.col-box li::before{content:'→';color:var(--blue);font-size:.75rem;flex-shrink:0;margin-top:2px;}
+
+/* ── BACK TOP ── */
+.back-top{position:fixed;bottom:1.5rem;right:1.5rem;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;box-shadow:0 4px 12px rgba(29,78,216,.35);opacity:0;transition:.3s;text-decoration:none;border:none;}
+.back-top.visible{opacity:1;}
+
+@media(max-width:480px){
+  .hero-title{font-size:2rem;}
+  .role-grid,.cols,.action-grid{grid-template-columns:1fr;}
+  .sla-box{flex-direction:column;text-align:center;}
+}
+</style>
+</head>
+<body>
+
+<div class="prog-bar"><div class="prog-fill" id="prog"></div></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">PVI · Sistema Operativo · 2026</div>
+  <h1 class="hero-title">Guía de<br><em>Revisión Contable</em></h1>
+  <p class="hero-sub">Todo lo que necesitas para revisar, validar y gestionar los gastos del equipo de campo.</p>
+  <div class="hero-chips">
+    <span class="chip">✅ Revisar gastos</span>
+    <span class="chip">⚠️ Poner observaciones</span>
+    <span class="chip">🔁 Devolver a campo</span>
+  </div>
+  <div>
+    <div class="sla-pill"><span class="clock">⏱</span> Tu SLA: 48 horas máximo por gasto</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav-sticky" id="nav">
+  <a class="nav-pill active" href="#tu-rol">Tu rol</a>
+  <a class="nav-pill" href="#flujo">El flujo</a>
+  <a class="nav-pill" href="#como-revisar">Cómo revisar</a>
+  <a class="nav-pill" href="#acciones">Las 3 acciones</a>
+  <a class="nav-pill" href="#sla">SLA 48 hrs</a>
+  <a class="nav-pill" href="#que-validar">Qué validar</a>
+  <a class="nav-pill" href="#errores">Errores comunes</a>
+  <a class="nav-pill" href="#checklist">Checklist</a>
+</nav>
+
+<div class="main">
+
+  <!-- TU ROL -->
+  <div class="section" id="tu-rol">
+    <div class="section-label">
+      <div class="section-num">1</div>
+      <div class="section-title">Tu rol en el sistema</div>
+    </div>
+    <p class="section-intro">El sistema tiene 4 personas. Aquí está el flujo completo y dónde entras tú — eres la segunda línea de control, la que da certeza contable antes de que se autorice cualquier pago.</p>
+
+    <div class="role-grid">
+      <div class="role-card">
+        <div class="role-name">Carlos / Jethro</div>
+        <div class="role-action">Registran cada gasto el mismo día. Suben foto del comprobante y llenan el formulario.</div>
+      </div>
+      <div class="role-card" style="background:var(--blue-light);border-color:var(--blue-mid);">
+        <div class="role-name" style="color:var(--blue);">Ana — Contadora ← tú</div>
+        <div class="role-action"><strong>Revisas y validas</strong> cada gasto. Sin tu aval, Tita no puede ver ni aprobar nada.</div>
+      </div>
+      <div class="role-card">
+        <div class="role-name">Tita — Tesorería</div>
+        <div class="role-action">Solo ve gastos que ya revisaste tú. Aprueba y registra la reposición de dinero.</div>
+      </div>
+      <div class="role-card">
+        <div class="role-name">Beto — CEO</div>
+        <div class="role-action">Lee el tablero ejecutivo. Ve alertas si hay retrasos en tu SLA.</div>
+      </div>
+    </div>
+
+    <div class="info-card rule">
+      <div class="info-icon">🔒</div>
+      <div class="info-text"><strong>Regla fija del sistema:</strong> Tita no puede ver ni aprobar ningún gasto que tú no hayas revisado primero. Eres el filtro obligatorio.</div>
+    </div>
+
+    <div class="master-rule">
+      <p>Sin tu revisión,<br><span>el dinero no se repone</span><br>y el ciclo se detiene.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- EL FLUJO -->
+  <div class="section" id="flujo">
+    <div class="section-label">
+      <div class="section-num">2</div>
+      <div class="section-title">El flujo completo</div>
+    </div>
+    <p class="section-intro">Cada gasto pasa por estados. Los estados cambian con las acciones que toma cada persona. Aquí está el camino completo de un gasto bien documentado:</p>
+
+    <div class="status-flow">
+      <div class="stt pend">🟡 Pendiente</div>
+      <div class="flow-arrow">→</div>
+      <div class="stt rev">🔵 Revisado</div>
+      <div class="flow-arrow">→</div>
+      <div class="stt aprov">🟢 Aprobado</div>
+    </div>
+    <p style="font-size:.78rem;color:var(--ink3);margin-bottom:.85rem">Cuando hay problema:</p>
+    <div class="status-flow">
+      <div class="stt pend">🟡 Pendiente</div>
+      <div class="flow-arrow">→</div>
+      <div class="stt obs">🟠 Observación</div>
+      <div class="flow-arrow">→</div>
+      <div class="stt pend">🟡 Carlos corrige</div>
+      <div class="flow-arrow">→</div>
+      <div class="stt rev">🔵 Revisado</div>
+    </div>
+
+    <div class="highlight">
+      <strong>Tu zona de acción:</strong> Los gastos en estado 🟡 Pendiente son los que esperan tu revisión. Los que ya pasaron a 🔵 Revisado están esperando a Tita. Beto ve todo en tiempo real.
+    </div>
+
+    <div class="cols">
+      <div class="col-box">
+        <div class="col-box-title">Lo que sí ves tú</div>
+        <ul>
+          <li>🟡 Todos los gastos pendientes</li>
+          <li>🟠 Gastos con observación (devueltos)</li>
+          <li>Foto del comprobante</li>
+          <li>Descripción, monto, negocio, subcategoría</li>
+        </ul>
+      </div>
+      <div class="col-box">
+        <div class="col-box-title">Lo que hace Tita después</div>
+        <ul>
+          <li>🔵 Solo ve gastos ya revisados por ti</li>
+          <li>Aprueba o rechaza</li>
+          <li>Registra la reposición</li>
+          <li>Tú ya no intervenes en ese ciclo</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- CÓMO REVISAR -->
+  <div class="section" id="como-revisar">
+    <div class="section-label">
+      <div class="section-num">3</div>
+      <div class="section-title">Cómo acceder a los gastos</div>
+    </div>
+    <p class="section-intro">Los gastos de Carlos y Jethro aterrizan automáticamente en la pestaña <code>GASTOS</code> del Google Sheet. Tú trabajas directamente en esa pestaña.</p>
+
+    <div class="step-list">
+      <div class="step blue">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-action">Abre el Google Sheet del sistema</div>
+          <div class="step-detail">Usa el link que te compartió Beto. Ábrelo desde computadora para trabajar cómoda — aunque también funciona en celular para consultas rápidas.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-action">Ve a la pestaña <code>GASTOS</code></div>
+          <div class="step-detail">Ahí están todos los registros de Carlos y Jethro. Las filas con estado <strong>🟡 Pendiente</strong> en la columna Q son los que esperan tu revisión.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-action">Filtra por estado Pendiente</div>
+          <div class="step-detail">Usa el filtro de la columna Q (ESTADO) para ver solo los que tienen <code>🟡 Pendiente</code>. Así no te pierdes entre registros ya revisados.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-action">Revisa cada registro y toma acción</div>
+          <div class="step-detail">Para cada gasto: lee la descripción, verifica el monto, abre la foto del comprobante (columna L tiene el link), y decide qué hacer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card tip">
+      <div class="info-icon">💡</div>
+      <div class="info-text"><strong>Tip:</strong> El link de la foto está en la columna L. Click en la celda → click en el link → se abre en Drive. Si no hay foto, la columna P muestra <code>📸 SIN FOTO</code> — eso es un error de campo que debes señalar.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- LAS 3 ACCIONES -->
+  <div class="section" id="acciones">
+    <div class="section-label">
+      <div class="section-num">4</div>
+      <div class="section-title">Las 3 acciones que puedes tomar</div>
+    </div>
+    <p class="section-intro">Por cada gasto pendiente, solo tienes tres opciones. Elige según lo que encuentres en el registro.</p>
+
+    <div class="action-grid">
+      <div class="action-btn ok">
+        <div class="action-icon">✔️</div>
+        <div class="action-name">Marcar revisado</div>
+        <div class="action-desc">Gasto correcto. Pasa a Tita para aprobación.</div>
+      </div>
+      <div class="action-btn obs">
+        <div class="action-icon">⚠️</div>
+        <div class="action-name">Observación</div>
+        <div class="action-desc">Hay algo que aclarar. Carlos/Jethro ven tu nota.</div>
+      </div>
+      <div class="action-btn dev">
+        <div class="action-icon">🔁</div>
+        <div class="action-name">Devolver</div>
+        <div class="action-desc">Error claro. Lo regresas con nota obligatoria.</div>
+      </div>
+    </div>
+
+    <div class="step-list" style="margin-top:1.25rem">
+      <div class="step green">
+        <div class="step-num">✔</div>
+        <div class="step-body">
+          <div class="step-action">Marcar como revisado → columna Q + columna S</div>
+          <div class="step-detail">En la columna <strong>Q (ESTADO)</strong> escribe: <code>🔵 Revisado</code>. En la columna <strong>S (FECHA REVISIÓN ANA)</strong> escribe la fecha de hoy. El sistema automáticamente notifica a Tita que tiene un gasto listo.</div>
+        </div>
+      </div>
+      <div class="step amber">
+        <div class="step-num">⚠</div>
+        <div class="step-body">
+          <div class="step-action">Poner observación → columna Q + columna R</div>
+          <div class="step-detail">En la columna <strong>Q (ESTADO)</strong> escribe: <code>🟠 Observación</code>. En la columna <strong>R (NOTAS ANA)</strong> escribe exactamente qué necesitas que corrijan o aclaren. Carlos/Jethro ven esta nota en su tablero.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">🔁</div>
+        <div class="step-body">
+          <div class="step-action">Devolver → columna Q + columna R (obligatorio)</div>
+          <div class="step-detail">En la columna <strong>Q (ESTADO)</strong> escribe: <code>🟡 Pendiente</code> para que regrese a cola. En la columna <strong>R (NOTAS ANA)</strong> escribe el motivo — esta nota es <strong>obligatoria</strong>, sin ella Carlos no sabe qué corregir.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card warn">
+      <div class="info-icon">⚠️</div>
+      <div class="info-text"><strong>Al devolver:</strong> Siempre escribe en Notas Ana el motivo específico. Ejemplo: <em>"Foto ilegible, sube de nuevo"</em> o <em>"Monto no coincide con ticket"</em>. Sin nota, Carlos no puede corregir.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SLA 48 HRS -->
+  <div class="section" id="sla">
+    <div class="section-label">
+      <div class="section-num">5</div>
+      <div class="section-title">El SLA de 48 horas</div>
+    </div>
+
+    <div class="sla-box">
+      <div class="sla-num">48</div>
+      <div class="sla-info">
+        <div class="sla-unit">horas máximo</div>
+        <div class="sla-detail">Desde que Carlos o Jethro registran el gasto hasta que tú lo revisas. Si se pasa de 48 hrs, el sistema genera una alerta automática para Beto — no para bloquearte, sino para que intervenga si hay un problema de acceso o información.</div>
+      </div>
+    </div>
+
+    <div class="step-list">
+      <div class="step green">
+        <div class="step-num">🟢</div>
+        <div class="step-body">
+          <div class="step-action">Dentro de 48 hrs — sin alerta</div>
+          <div class="step-detail">El tablero de Beto muestra la columna <strong>⏱ SLA ANA</strong> en verde. Todo normal.</div>
+        </div>
+      </div>
+      <div class="step red">
+        <div class="step-num">🔴</div>
+        <div class="step-body">
+          <div class="step-action">Pasadas 48 hrs — alerta a Beto</div>
+          <div class="step-detail">El sistema marca automáticamente <code>VENCIDO</code> en la columna T. Beto recibe una alerta en su tablero con el número de gastos vencidos. La alerta no te bloquea — solo informa.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <strong>En la práctica:</strong> Si recibes muchos gastos en un día (como arranque de semana), revísalos por lotes ese mismo día o al siguiente. Si tienes algún impedimento para revisar en 48 hrs, avísale a Beto directamente para que no interprete mal la alerta.
+    </div>
+
+    <div class="info-card tip">
+      <div class="info-icon">💡</div>
+      <div class="info-text"><strong>La columna T (⏱ SLA ANA)</strong> se calcula automáticamente. Muestra cuántas horas llevan sin revisión. Úsala como semáforo visual cuando abres el Sheet: ordena por esa columna y atiende los más antiguos primero.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- QUÉ VALIDAR -->
+  <div class="section" id="que-validar">
+    <div class="section-label">
+      <div class="section-num">6</div>
+      <div class="section-title">Qué revisar en cada gasto</div>
+    </div>
+    <p class="section-intro">Checklist de validación para cada registro. No todos los puntos aplican siempre, pero son la guía estándar.</p>
+
+    <div class="step-list">
+      <div class="step blue">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-action">Foto del comprobante (columna L)</div>
+          <div class="step-detail">¿Hay foto? ¿Es legible? ¿Se ve claramente el monto, la fecha y el proveedor? Si no hay foto o es ilegible → <strong>devolver con nota</strong>.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-action">Monto coincide con comprobante (columna J)</div>
+          <div class="step-detail">El número capturado debe coincidir con lo que muestra el ticket o factura. Si hay diferencia pequeña (centavos), puedes aprobar con nota. Si es diferencia significativa → devolver.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-action">Negocio correcto (columna E)</div>
+          <div class="step-detail">¿El gasto corresponde al negocio seleccionado? Un error frecuente es que Carlos asigne un gasto de Taller a Quinta Tabachín. Si es obviamente incorrecto → observación o devolución.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-action">Descripción clara (columna H)</div>
+          <div class="step-detail">La descripción debe ser suficientemente específica para entender qué se compró. <em>"Materiales"</em> sola no es suficiente. <em>"Balatas Nissan NP300 PVI"</em> sí lo es. Si es muy vaga → observación.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-action">Tipo de gasto (columna F) — operativo vs inversión</div>
+          <div class="step-detail">Esto afecta contabilidad. Una refacción es operativo. Una máquina nueva es inversión. Si está mal clasificado → corregir directamente en la celda y dejar nota en R.</div>
+        </div>
+      </div>
+      <div class="step blue">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-action">Registro tardío marcado (columna O)</div>
+          <div class="step-detail">Si la columna O muestra <code>⏰ TARDÍO</code>, el gasto fue capturado después de 24 hrs. No lo bloquea automáticamente, pero es señal de que debes validar con más cuidado la fecha del comprobante.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ERRORES COMUNES -->
+  <div class="section" id="errores">
+    <div class="section-label">
+      <div class="section-num">7</div>
+      <div class="section-title">Errores que hay que evitar</div>
+    </div>
+
+    <div class="step-list">
+      <div class="step amber">
+        <div class="step-num">✗</div>
+        <div class="step-body">
+          <div class="step-action">Marcar como revisado sin revisar la foto</div>
+          <div class="step-detail">La foto es el comprobante real del gasto. Revisar sin verla equivale a aprobar a ciegas. Si el link no carga, pide a Carlos que lo reenvíe antes de marcar.</div>
+        </div>
+      </div>
+      <div class="step amber">
+        <div class="step-num">✗</div>
+        <div class="step-body">
+          <div class="step-action">Devolver sin nota en columna R</div>
+          <div class="step-detail">Carlos o Jethro no saben qué corregir si no hay una nota específica. La devolución sin nota genera confusión y retrasos.</div>
+        </div>
+      </div>
+      <div class="step amber">
+        <div class="step-num">✗</div>
+        <div class="step-body">
+          <div class="step-action">No llenar la fecha de revisión (columna S)</div>
+          <div class="step-detail">Si marcas revisado pero dejas la columna S vacía, el sistema no puede calcular el SLA ni cerrar el ciclo correctamente. Siempre llena fecha al aprobar.</div>
+        </div>
+      </div>
+      <div class="step amber">
+        <div class="step-num">✗</div>
+        <div class="step-body">
+          <div class="step-action">Acumular revisiones para el viernes</div>
+          <div class="step-detail">Si Carlos registra el lunes y tú revisas el viernes, el SLA ya venció. Beto recibe alertas innecesarias. Lo ideal es revisar cada 24-48 hrs.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- CHECKLIST -->
+  <div class="section" id="checklist">
+    <div class="section-label">
+      <div class="section-num">8</div>
+      <div class="section-title">Checklist de arranque</div>
+    </div>
+    <p class="section-intro">Completa estos pasos la primera vez. Confirma que tienes todo lo que necesitas para operar.</p>
+
+    <div class="checklist" id="chk">
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Tengo acceso al <strong>Google Sheet</strong> del sistema y puedo abrir la pestaña GASTOS</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Sé cómo <strong>filtrar por estado</strong> en la columna Q para ver solo los gastos pendientes</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Sé cómo abrir la <strong>foto del comprobante</strong> desde la columna L</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Entiendo las <strong>3 acciones</strong>: marcar revisado, poner observación, devolver</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Sé que siempre debo llenar <strong>columna R (Notas Ana)</strong> al devolver</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Sé que siempre debo llenar <strong>columna S (Fecha revisión)</strong> al aprobar</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Entiendo el <strong>SLA de 48 horas</strong> y qué pasa si se vence</div>
+      </div>
+      <div class="check-item">
+        <div class="check-box" onclick="toggle(this)"></div>
+        <div class="check-text">Revisé el primer gasto de prueba que hizo <strong>Carlos el 24 de marzo</strong> y ya aparece como revisado</div>
+      </div>
+    </div>
+
+    <div class="info-card rule" style="margin-top:1rem">
+      <div class="info-icon">✅</div>
+      <div class="info-text">Con este checklist completo, el ciclo de revisión está activo de tu lado. Cualquier duda con Beto.</div>
+    </div>
+
+    <div class="master-rule">
+      <p><span>"Sin registro no existe.</span><br>Sin revisión no se repone.<br><span>Sin datos no se decide."</span></p>
+    </div>
+  </div>
+
+</div>
+
+<button class="back-top" id="bk" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  const p=(h.scrollTop/(h.scrollHeight-h.clientHeight))*100;
+  document.getElementById('prog').style.width=p+'%';
+  document.getElementById('bk').classList.toggle('visible',h.scrollTop>400);
+});
+
+const secs=document.querySelectorAll('.section');
+const pills=document.querySelectorAll('.nav-pill');
+new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id;
+      pills.forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id));
+    }
+  });
+},{rootMargin:'-30% 0px -60% 0px'}).observe(...Array.from(secs).map(s=>(s)));
+
+secs.forEach(s=>new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id;
+      pills.forEach(p=>p.classList.toggle('active',p.getAttribute('href')==='#'+id));
+    }
+  });
+},{rootMargin:'-30% 0px -60% 0px'}).observe(s));
+
+function toggle(el){
+  el.classList.toggle('done');
+  const idx=[...document.querySelectorAll('.check-box')].indexOf(el);
+  localStorage.setItem('pvi_ana_check_'+idx,el.classList.contains('done')?'1':'0');
+}
+document.querySelectorAll('.check-box').forEach((el,i)=>{
+  if(localStorage.getItem('pvi_ana_check_'+i)==='1')el.classList.add('done');
+});
+</script>
+</body>
+</html>
