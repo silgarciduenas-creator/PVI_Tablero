@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PVI — Mi Tablero</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0E0E0E;
+  --card:     #181818;
+  --card2:    #202020;
+  --border:   #2A2A2A;
+  --gold:     #C9A84C;
+  --gold-dim: rgba(201,168,76,0.15);
+  --green:    #3ECF8E;
+  --green-dim:rgba(62,207,142,0.12);
+  --amber:    #F59E0B;
+  --amber-dim:rgba(245,158,11,0.12);
+  --red:      #EF4444;
+  --red-dim:  rgba(239,68,68,0.12);
+  --blue:     #60A5FA;
+  --ink:      #F5F5F5;
+  --ink2:     #A0A0A0;
+  --ink3:     #606060;
+  --r:        12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; background:var(--bg); color:var(--ink); font-family:'DM Sans',sans-serif; }
+
+/* ── PIN SCREEN ── */
+#pin-screen {
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:2rem;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 70%), var(--bg);
+}
+.pin-logo {
+  font-family:'DM Serif Display',serif;
+  font-size:2rem; letter-spacing:.04em; color:var(--gold);
+  margin-bottom:.35rem;
+}
+.pin-sub {
+  font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink3); margin-bottom:3rem;
+}
+.pin-label {
+  font-size:.75rem; color:var(--ink2); letter-spacing:.06em;
+  text-transform:uppercase; margin-bottom:1.25rem; text-align:center;
+}
+.pin-dots {
+  display:flex; gap:14px; margin-bottom:2.5rem; justify-content:center;
+}
+.pin-dot {
+  width:14px; height:14px; border-radius:50%;
+  border:2px solid var(--border); background:transparent;
+  transition:all .2s;
+}
+.pin-dot.filled {
+  background:var(--gold); border-color:var(--gold);
+  box-shadow:0 0 10px rgba(201,168,76,0.5);
+}
+.pin-dot.error {
+  background:var(--red); border-color:var(--red);
+  animation:shake .3s ease;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}
+}
+.pin-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  max-width:280px; width:100%;
+}
+.pin-btn {
+  height:68px; border-radius:var(--r);
+  background:var(--card); border:1px solid var(--border);
+  color:var(--ink); font-family:'DM Sans',sans-serif;
+  font-size:1.4rem; font-weight:500; cursor:pointer;
+  transition:all .12s; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:1px;
+  -webkit-user-select:none; user-select:none;
+  position:relative; overflow:hidden;
+}
+.pin-btn:active { background:var(--card2); transform:scale(.96); border-color:var(--gold); }
+.pin-btn .sub-letters {
+  font-size:.55rem; letter-spacing:.1em; color:var(--ink3); line-height:1;
+}
+.pin-btn.wide { grid-column:span 2; }
+.pin-error {
+  margin-top:1.5rem; font-size:.78rem; color:var(--red);
+  text-align:center; min-height:1.2rem;
+  letter-spacing:.03em;
+}
+
+/* ── APP SHELL ── */
+#app { display:none; min-height:100vh; flex-direction:column; max-width:480px; margin:0 auto; }
+#app.visible { display:flex; animation:fadeUp .35s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── HEADER ── */
+.app-header {
+  padding:1.25rem 1.5rem 1rem;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  background: linear-gradient(180deg, rgba(201,168,76,0.04) 0%, transparent 100%);
+}
+.hdr-brand { display:flex; align-items:baseline; gap:.6rem; }
+.hdr-logo { font-family:'DM Serif Display',serif; font-size:1.1rem; color:var(--gold); }
+.hdr-sep { width:1px; height:14px; background:var(--border); }
+.hdr-name { font-size:.9rem; font-weight:500; color:var(--ink); }
+.hdr-right { display:flex; align-items:center; gap:.75rem; }
+.live-pill {
+  display:flex; align-items:center; gap:5px;
+  font-size:.65rem; color:var(--green); letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.live-dot {
+  width:5px; height:5px; border-radius:50%; background:var(--green);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.logout-btn {
+  font-size:.7rem; color:var(--ink3); cursor:pointer; padding:4px 8px;
+  border-radius:4px; border:1px solid var(--border);
+  background:transparent; transition:.15s;
+}
+.logout-btn:active { background:var(--card2); }
+
+/* ── SCROLL AREA ── */
+.scroll-area { flex:1; overflow-y:auto; padding:1.5rem 1.25rem 3rem; }
+
+/* ── BALANCE HERO ── */
+.balance-hero {
+  background: linear-gradient(135deg, #1A1A0E 0%, #141410 100%);
+  border:1px solid rgba(201,168,76,0.25);
+  border-radius:var(--r); padding:1.75rem 1.5rem 1.5rem;
+  margin-bottom:1rem; position:relative; overflow:hidden;
+}
+.balance-hero::before {
+  content:''; position:absolute; top:-40px; right:-40px;
+  width:160px; height:160px; border-radius:50%;
+  background:radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+.balance-week {
+  font-size:.65rem; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--gold); margin-bottom:.75rem; opacity:.8;
+}
+.balance-label { font-size:.72rem; color:var(--ink3); margin-bottom:.3rem; }
+.balance-amount {
+  font-family:'DM Serif Display',serif;
+  font-size:2.6rem; color:var(--ink); line-height:1;
+  margin-bottom:.25rem; letter-spacing:-.02em;
+}
+.balance-amount.green { color:var(--green); }
+.balance-amount.amber { color:var(--amber); }
+.balance-amount.red   { color:var(--red); }
+.balance-semaforo {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:.75rem; font-weight:600; padding:3px 10px;
+  border-radius:20px; margin-top:.5rem;
+}
+.balance-semaforo.ok   { background:var(--green-dim); color:var(--green); }
+.balance-semaforo.warn { background:var(--amber-dim); color:var(--amber); }
+.balance-semaforo.crit { background:var(--red-dim);   color:var(--red); }
+.balance-semaforo::before {
+  content:''; width:6px; height:6px; border-radius:50%;
+}
+.balance-semaforo.ok::before   { background:var(--green); }
+.balance-semaforo.warn::before { background:var(--amber); }
+.balance-semaforo.crit::before { background:var(--red); }
+
+/* ── STAT GRID ── */
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1rem; }
+.stat-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r); padding:1rem 1.1rem;
+  position:relative; overflow:hidden;
+}
+.stat-card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--border);
+}
+.stat-card.green::after { background:var(--green); }
+.stat-card.amber::after { background:var(--amber); }
+.stat-card.gold::after  { background:var(--gold);  }
+.stat-card.blue::after  { background:var(--blue);  }
+.stat-lbl { font-size:.62rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink3); margin-bottom:.45rem; }
+.stat-val { font-family:'DM Serif Display',serif; font-size:1.35rem; line-height:1; color:var(--ink); }
+.stat-val.green { color:var(--green); }
+.stat-val.amber { color:var(--amber); }
+.stat-val.red   { color:var(--red);   }
+.stat-val.gold  { color:var(--gold);  }
+
+/* ── PROGRESS BAR ── */
+.prog-wrap { margin-bottom:1rem; }
+.prog-header { display:flex; justify-content:space-between; font-size:.7rem; color:var(--ink2); margin-bottom:.45rem; }
+.prog-track { height:6px; background:var(--card2); border-radius:3px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:3px; background:var(--green); transition:width 1s ease; }
+.prog-fill.amber { background:var(--amber); }
+.prog-fill.red   { background:var(--red); }
+
+/* ── SECTION HEADER ── */
+.sec-header {
+  font-size:.62rem; text-transform:uppercase; letter-spacing:.1em;
+  color:var(--ink3); margin:1.5rem 0 .75rem;
+  padding-bottom:.5rem; border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.sec-count {
+  background:var(--card2); color:var(--ink2);
+  font-size:.62rem; padding:2px 7px; border-radius:10px;
+}
+
+/* ── GASTO CARD ── */
+.gasto-list { display:flex; flex-direction:column; gap:.6rem; }
+.gasto-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r); padding:1rem 1.1rem;
+  display:flex; align-items:flex-start; gap:.85rem;
+  transition:border-color .15s;
+}
+.gasto-card:active { border-color:var(--gold); }
+.gasto-icon {
+  width:36px; height:36px; border-radius:8px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.9rem;
+}
+.gasto-icon.aprov { background:var(--green-dim); }
+.gasto-icon.pend  { background:var(--amber-dim); }
+.gasto-icon.obs   { background:var(--red-dim);   }
+.gasto-icon.rev   { background:rgba(96,165,250,.1); }
+.gasto-body { flex:1; min-width:0; }
+.gasto-desc {
+  font-size:.83rem; font-weight:500; color:var(--ink);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  margin-bottom:.25rem;
+}
+.gasto-meta { display:flex; gap:.5rem; flex-wrap:wrap; }
+.gasto-tag {
+  font-size:.62rem; padding:2px 7px; border-radius:4px;
+  color:var(--ink3); background:var(--card2); white-space:nowrap;
+}
+.gasto-right { text-align:right; flex-shrink:0; }
+.gasto-monto {
+  font-family:'DM Serif Display',serif; font-size:1rem;
+  color:var(--ink); white-space:nowrap;
+}
+.gasto-badge {
+  font-size:.6rem; display:inline-block; padding:2px 6px;
+  border-radius:3px; margin-top:3px; white-space:nowrap;
+}
+.gasto-badge.aprov { background:var(--green-dim); color:var(--green); }
+.gasto-badge.pend  { background:var(--amber-dim); color:var(--amber); }
+.gasto-badge.obs   { background:var(--red-dim);   color:var(--red);   }
+.gasto-badge.rev   { background:rgba(96,165,250,.1); color:var(--blue); }
+
+/* ── EMPTY STATE ── */
+.empty { text-align:center; padding:3rem 1rem; color:var(--ink3); font-size:.85rem; }
+.empty-icon { font-size:2rem; margin-bottom:.75rem; opacity:.4; }
+
+/* ── TABS ── */
+.tab-bar {
+  display:flex; background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:3px; gap:2px; margin-bottom:1.25rem;
+}
+.tab-btn {
+  flex:1; height:34px; border-radius:7px; border:none;
+  background:transparent; color:var(--ink2); font-family:'DM Sans',sans-serif;
+  font-size:.75rem; font-weight:500; cursor:pointer; transition:.15s;
+}
+.tab-btn.active { background:var(--card2); color:var(--ink); }
+
+/* ── LOADING ── */
+.loading-wrap {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:4rem 1rem; gap:1rem;
+}
+.spinner {
+  width:28px; height:28px; border:2px solid var(--border);
+  border-top-color:var(--gold); border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+.loading-lbl { font-size:.75rem; color:var(--ink3); letter-spacing:.05em; }
+
+/* ── NEGOCIO MINI LIST ── */
+.neg-list { display:flex; flex-direction:column; gap:.5rem; }
+.neg-row {
+  display:flex; align-items:center; gap:.75rem;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:8px; padding:.75rem 1rem;
+}
+.neg-bar-wrap { flex:1; }
+.neg-name { font-size:.78rem; color:var(--ink2); margin-bottom:.3rem; }
+.neg-track { height:4px; background:var(--card2); border-radius:2px; overflow:hidden; }
+.neg-fill  { height:100%; border-radius:2px; background:var(--gold); }
+.neg-monto { font-size:.82rem; font-weight:500; color:var(--ink); white-space:nowrap; font-family:'DM Serif Display',serif; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ PIN SCREEN ══════════ -->
+<div id="pin-screen">
+  <div class="pin-logo">PVI</div>
+  <div class="pin-sub">Control Operativo · 2026</div>
+  <div class="pin-label">Ingresa tu PIN</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid" id="pin-grid">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2<span class="sub-letters">ABC</span></button>
+    <button class="pin-btn" onclick="pinPress('3')">3<span class="sub-letters">DEF</span></button>
+    <button class="pin-btn" onclick="pinPress('4')">4<span class="sub-letters">GHI</span></button>
+    <button class="pin-btn" onclick="pinPress('5')">5<span class="sub-letters">JKL</span></button>
+    <button class="pin-btn" onclick="pinPress('6')">6<span class="sub-letters">MNO</span></button>
+    <button class="pin-btn" onclick="pinPress('7')">7<span class="sub-letters">PQRS</span></button>
+    <button class="pin-btn" onclick="pinPress('8')">8<span class="sub-letters">TUV</span></button>
+    <button class="pin-btn" onclick="pinPress('9')">9<span class="sub-letters">WXYZ</span></button>
+    <div></div>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn" onclick="pinDelete()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+  <div class="app-header">
+    <div class="hdr-brand">
+      <span class="hdr-logo">PVI</span>
+      <div class="hdr-sep"></div>
+      <span class="hdr-name" id="hdr-name">—</span>
+    </div>
+    <div class="hdr-right">
+      <div class="live-pill"><div class="live-dot"></div>En vivo</div>
+      <button class="logout-btn" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+    <div class="loading-wrap" id="app-loading">
+      <div class="spinner"></div>
+      <div class="loading-lbl">Cargando tus datos...</div>
+    </div>
+
+    <div id="app-content" style="display:none">
+
+      <!-- HERO BALANCE -->
+      <div class="balance-hero">
+        <div class="balance-week" id="bal-week">Semana —</div>
+        <div class="balance-label">Disponible ahora</div>
+        <div class="balance-amount" id="bal-disponible">—</div>
+        <div class="balance-semaforo ok" id="bal-semaforo">OK</div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stat-grid">
+        <div class="stat-card green">
+          <div class="stat-lbl">Gastado ✓</div>
+          <div class="stat-val green" id="s-aprobado">—</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-lbl">En revisión</div>
+          <div class="stat-val amber" id="s-pendiente">—</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-lbl">Fondo semana</div>
+          <div class="stat-val gold" id="s-fondo">—</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-lbl">Repuesto (Tita)</div>
+          <div class="stat-val" id="s-repuesto">—</div>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="prog-wrap">
+        <div class="prog-header">
+          <span>Fondo utilizado</span>
+          <span id="prog-pct">0%</span>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="setTab('semana')">Esta semana</button>
+        <button class="tab-btn" onclick="setTab('mes')">Mes</button>
+        <button class="tab-btn" onclick="setTab('negocios')">Por negocio</button>
+      </div>
+
+      <!-- TAB: SEMANA -->
+      <div id="tab-semana">
+        <div class="sec-header">
+          Mis gastos — semana
+          <span class="sec-count" id="cnt-semana">0</span>
+        </div>
+        <div class="gasto-list" id="list-semana">
+          <div class="empty"><div class="empty-icon">📋</div>Sin gastos esta semana</div>
+        </div>
+      </div>
+
+      <!-- TAB: MES -->
+      <div id="tab-mes" style="display:none">
+        <div class="stat-grid" style="margin-bottom:1rem">
+          <div class="stat-card green">
+            <div class="stat-lbl">Gastado mes ✓</div>
+            <div class="stat-val green" id="m-aprobado">—</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-lbl">Pendiente mes</div>
+            <div class="stat-val amber" id="m-pendiente">—</div>
+          </div>
+        </div>
+        <div class="sec-header">
+          Mis gastos — mes en curso
+          <span class="sec-count" id="cnt-mes">0</span>
+        </div>
+        <div class="gasto-list" id="list-mes">
+          <div class="empty"><div class="empty-icon">📋</div>Sin gastos este mes</div>
+        </div>
+      </div>
+
+      <!-- TAB: NEGOCIOS -->
+      <div id="tab-negocios" style="display:none">
+        <div class="sec-header">Gasto por negocio — semana</div>
+        <div class="neg-list" id="neg-list">
+          <div class="empty"><div class="empty-icon">🏢</div>Sin datos esta semana</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────
+const API_KEY  = 'AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg';
+const SHEET_ID = '1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk';
+const BASE     = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
+
+// ── PINES — Beto: cambia estos números por los que quieras ────
+// Formato: '1234': 'Nombre'  (siempre 4 dígitos entre comillas)
+const PINS = {
+  '2403': 'Carlos',
+  '1748': 'Jethro'
+};
+// ──────────────────────────────────────────────────────────────
+
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+// ── PIN STATE ──────────────────────────────────────────────────
+let pinBuffer = '';
+let currentUser = null;
+let currentTab = 'semana';
+
+function pinPress(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updateDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(validatePin, 100);
+  }
+}
+
+function pinDelete() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  document.getElementById('pin-error').textContent = '';
+  updateDots(false);
+}
+
+function updateDots(error = false) {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('d' + i);
+    d.className = 'pin-dot' + (i < pinBuffer.length ? (error ? ' error' : ' filled') : '');
+  }
+}
+
+function validatePin() {
+  const user = PINS[pinBuffer];
+  if (user) {
+    currentUser = user;
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('hdr-name').textContent = user;
+    const app = document.getElementById('app');
+    app.classList.add('visible');
+    loadData();
+  } else {
+    updateDots(true);
+    document.getElementById('pin-error').textContent = 'PIN incorrecto. Intenta de nuevo.';
+    setTimeout(() => {
+      pinBuffer = '';
+      updateDots(false);
+      document.getElementById('pin-error').textContent = '';
+    }, 800);
+  }
+}
+
+function logout() {
+  pinBuffer = '';
+  currentUser = null;
+  updateDots(false);
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  document.getElementById('app-loading').style.display = 'flex';
+  document.getElementById('app-content').style.display = 'none';
+  document.getElementById('pin-screen').style.display = 'flex';
+}
+
+// ── DATA ───────────────────────────────────────────────────────
+function parseMonto(val) {
+  if (!val && val !== 0) return 0;
+  let s = val.toString().replace(/\$/g,'').replace(/\s/g,'').trim();
+  if (s.includes(',') && s.includes('.')) { s = s.replace(/,/g,''); }
+  else if (s.includes('.')) { const p = s.split('.'); if (p[p.length-1].length===3) s=s.replace(/\./g,''); }
+  else if (s.includes(',')) { s = s.replace(',','.'); }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function parseDate(str) {
+  if (!str) return null;
+  const s = str.toString().trim();
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) { const d = new Date(m[3], m[2]-1, m[1]); return isNaN(d.getTime())?null:d; }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function getWeekNum(date) {
+  const d = new Date(date);
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate()+4-(d.getDay()||7));
+  const y = new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d-y)/86400000)+1)/7);
+}
+
+function fmt(n) {
+  const num = typeof n==='string'?parseMonto(n):(n||0);
+  if (isNaN(num)) return '$0';
+  return '$'+Math.round(num).toLocaleString('es-MX');
+}
+
+async function fetchRange(range) {
+  const r = await fetch(`${BASE}/${encodeURIComponent(range)}?key=${API_KEY}`);
+  if (!r.ok) throw new Error(`${r.status}`);
+  return (await r.json()).values || [];
+}
+
+async function loadData() {
+  try {
+    const [gastos, semana, repos] = await Promise.all([
+      fetchRange('GASTOS!A6:T1005'),
+      fetchRange('SEMANA_ACTIVA!B1:F50'),
+      fetchRange('Reposiciones!C2:E200'),
+    ]);
+
+    const now = new Date();
+    const cw  = getWeekNum(now);
+    const cm  = now.getMonth()+1;
+    const cy  = now.getFullYear();
+
+    // Get fund from SEMANA_ACTIVA
+    let fondo = 25000;
+    semana.forEach(r => {
+      const lbl = (r[1]||'').toString();
+      const val = parseFloat((r[3]||'').toString().replace(/[$,. ]/g,''))||0;
+      if (lbl.includes(currentUser) && lbl.includes('Fondo') && val>0) fondo = val;
+    });
+
+    // Get reposicion this week
+    let repSem = 0, repMes = 0;
+    repos.forEach(r => {
+      const f = parseDate(r[0]);
+      if (!f || (r[1]||'').toString().trim()!==currentUser) return;
+      if (f.getFullYear()===cy) {
+        if (f.getMonth()+1===cm) repMes += parseMonto(r[2]);
+        if (getWeekNum(f)===cw) repSem += parseMonto(r[2]);
+      }
+    });
+
+    // Process gastos — only mine
+    let semAprov=0, semPend=0;
+    let mesAprov=0, mesPend=0;
+    const semRows=[], mesRows=[];
+    const semNeg={};
+
+    gastos.forEach(row => {
+      const resp  = (row[3]||'').toString().trim();
+      if (resp !== currentUser) return;
+      const fecha  = parseDate(row[2]);
+      if (!fecha || fecha.getFullYear()!==cy) return;
+      const monto  = parseMonto(row[9]);
+      const estado = (row[16]||'').toString().trim();
+      const neg    = (row[4]||'').toString().trim();
+      const sub    = (row[6]||'').toString().trim();
+      const desc   = (row[7]||'').toString().trim();
+      const week   = getWeekNum(fecha);
+      const month  = fecha.getMonth()+1;
+      const isAprov = estado.includes('Aprobado');
+      const isRev   = estado.includes('Revisado');
+      const isObs   = estado.includes('Observación')||estado.includes('Observacion');
+
+      const rowData = { fecha, monto, estado, neg, sub, desc, isAprov, isRev, isObs };
+
+      if (week===cw) {
+        if (isAprov) semAprov+=monto; else semPend+=monto;
+        semNeg[neg] = (semNeg[neg]||0)+monto;
+        semRows.push(rowData);
+      }
+      if (month===cm) {
+        if (isAprov) mesAprov+=monto; else mesPend+=monto;
+        mesRows.push(rowData);
+      }
+    });
+
+    // Sort by fecha desc
+    semRows.sort((a,b)=>b.fecha-a.fecha);
+    mesRows.sort((a,b)=>b.fecha-a.fecha);
+
+    const disponible = fondo - semAprov + repSem;
+
+    renderApp({
+      fondo, repSem, repMes,
+      semAprov, semPend, disponible,
+      mesAprov, mesPend,
+      semRows, mesRows, semNeg,
+      now, cw
+    });
+
+  } catch(err) {
+    document.getElementById('app-loading').innerHTML =
+      `<div style="color:var(--red);font-size:.8rem;text-align:center;padding:1rem">
+        Error al cargar datos.<br><small>${err.message}</small>
+      </div>`;
+  }
+}
+
+function renderApp(d) {
+  // ── HERO ──
+  const mon = new Date(d.now); mon.setDate(d.now.getDate()-(d.now.getDay()||7)+1);
+  const sun = new Date(mon);   sun.setDate(mon.getDate()+6);
+  const fd = dt => dt.getDate()+' '+MESES[dt.getMonth()];
+  document.getElementById('bal-week').textContent = `Sem ${d.cw} · ${fd(mon)} – ${fd(sun)}`;
+
+  const balEl = document.getElementById('bal-disponible');
+  balEl.textContent = fmt(d.disponible);
+  balEl.className = 'balance-amount' + (d.disponible<5000?' red':d.disponible<10000?' amber':' green');
+
+  const semEl = document.getElementById('bal-semaforo');
+  if (d.disponible < 5000) {
+    semEl.className='balance-semaforo crit'; semEl.textContent='CRÍTICO — avisa a Beto';
+  } else if (d.disponible < 10000) {
+    semEl.className='balance-semaforo warn'; semEl.textContent='Saldo bajo — atención';
+  } else {
+    semEl.className='balance-semaforo ok'; semEl.textContent='Saldo OK';
+  }
+
+  // ── STATS ──
+  document.getElementById('s-aprobado').textContent = fmt(d.semAprov);
+  document.getElementById('s-pendiente').textContent= fmt(d.semPend);
+  document.getElementById('s-fondo').textContent    = fmt(d.fondo);
+  document.getElementById('s-repuesto').textContent = fmt(d.repSem);
+
+  // ── PROGRESS ──
+  const used = d.semAprov + d.semPend;
+  const pct  = Math.min(100, d.fondo>0 ? (used/d.fondo)*100 : 0);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-fill').className = 'prog-fill'+(pct>80?' red':pct>50?' amber':'');
+  document.getElementById('prog-pct').textContent = pct.toFixed(0)+'%';
+
+  // ── MES STATS ──
+  document.getElementById('m-aprobado').textContent = fmt(d.mesAprov);
+  document.getElementById('m-pendiente').textContent= fmt(d.mesPend);
+
+  // ── GASTO LISTS ──
+  document.getElementById('cnt-semana').textContent = d.semRows.length;
+  document.getElementById('cnt-mes').textContent    = d.mesRows.length;
+  renderList('list-semana', d.semRows);
+  renderList('list-mes', d.mesRows);
+  renderNegocios(d.semNeg);
+
+  document.getElementById('app-loading').style.display = 'none';
+  document.getElementById('app-content').style.display = 'block';
+}
+
+function renderList(id, rows) {
+  const el = document.getElementById(id);
+  if (!rows.length) {
+    el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>Sin gastos registrados</div>';
+    return;
+  }
+  el.innerHTML = rows.map(g => {
+    const cls = g.isAprov?'aprov':g.isObs?'obs':g.isRev?'rev':'pend';
+    const icon = g.isAprov?'✓':g.isObs?'!':g.isRev?'👁':'⏳';
+    const estadoTxt = g.isAprov?'Aprobado':g.isObs?'Observación':g.isRev?'En revisión':'Pendiente';
+    const fechaTxt = g.fecha.toLocaleDateString('es-MX',{day:'2-digit',month:'short'});
+    return `<div class="gasto-card">
+      <div class="gasto-icon ${cls}">${icon}</div>
+      <div class="gasto-body">
+        <div class="gasto-desc">${g.desc||'Sin descripción'}</div>
+        <div class="gasto-meta">
+          <span class="gasto-tag">${fechaTxt}</span>
+          <span class="gasto-tag">${g.neg||'—'}</span>
+          ${g.sub?`<span class="gasto-tag">${g.sub}</span>`:''}
+        </div>
+      </div>
+      <div class="gasto-right">
+        <div class="gasto-monto">${fmt(g.monto)}</div>
+        <span class="gasto-badge ${cls}">${estadoTxt}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNegocios(negObj) {
+  const el = document.getElementById('neg-list');
+  const entries = Object.entries(negObj).filter(([k])=>k).sort((a,b)=>b[1]-a[1]);
+  if (!entries.length) {
+    el.innerHTML='<div class="empty"><div class="empty-icon">🏢</div>Sin datos esta semana</div>';
+    return;
+  }
+  const max = entries[0][1];
+  el.innerHTML = entries.map(([neg, monto]) => {
+    const pct = max>0?(monto/max)*100:0;
+    return `<div class="neg-row">
+      <div class="neg-bar-wrap">
+        <div class="neg-name">${neg}</div>
+        <div class="neg-track"><div class="neg-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="neg-monto">${fmt(monto)}</div>
+    </div>`;
+  }).join('');
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  ['semana','mes','negocios'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab?'block':'none';
+  });
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['semana','mes','negocios'][i]===tab);
+  });
+}
+</script>
+</body>
+</html>
