@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PVI · Revisión Ana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#0f2444; --navy-mid:#1a3a6e; --teal:#0d9488; --teal-light:#ccfbf1;
+    --amber:#d97706; --amber-bg:#fef3c7; --red:#dc2626; --red-bg:#fee2e2;
+    --green:#16a34a; --green-bg:#dcfce7; --gray:#64748b;
+    --border:#e2e8f0; --bg:#f8fafc; --white:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Barlow',sans-serif;background:var(--bg);color:#1e293b;min-height:100vh;}
+
+  #pin-screen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:1.5rem;}
+  #pin-screen.hidden{display:none;}
+  .pin-logo{color:var(--teal);font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.25em;text-transform:uppercase;}
+  .pin-title{color:white;font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:700;}
+  .pin-sub{color:#94a3b8;font-size:.88rem;}
+  .pin-dots{display:flex;gap:.75rem;}
+  .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid #475569;background:transparent;transition:background .2s;}
+  .pin-dot.filled{background:var(--teal);border-color:var(--teal);}
+  .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;width:210px;}
+  .pin-btn{background:#1e3a5f;border:1px solid #2d5a9e;color:white;font-family:'Barlow',sans-serif;font-size:1.4rem;font-weight:600;border-radius:10px;padding:.9rem;cursor:pointer;transition:all .15s;}
+  .pin-btn:hover{background:#2d5a9e;}
+  .pin-btn:active{transform:scale(.95);}
+  .pin-btn.del{font-size:.95rem;color:#94a3b8;}
+  .pin-error{color:#f87171;font-size:.82rem;min-height:1.1rem;}
+
+  #main{display:none;}
+  #main.visible{display:block;}
+
+  header{background:var(--navy);padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+  .h-left{display:flex;align-items:center;gap:1rem;}
+  .h-logo{color:var(--teal);font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;}
+  .h-title{color:white;font-family:'Barlow Condensed',sans-serif;font-size:1.45rem;font-weight:700;}
+  .h-period{background:#1a3a6e;color:#93c5fd;font-size:.78rem;font-weight:500;padding:.22rem .7rem;border-radius:20px;}
+  .h-right{display:flex;align-items:center;gap:.75rem;}
+  .updated{color:#64748b;font-size:.75rem;}
+  .btn-refresh{background:#1a3a6e;border:none;color:#93c5fd;padding:.35rem .85rem;border-radius:6px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:.8rem;transition:background .2s;}
+  .btn-refresh:hover{background:#2d5a9e;}
+
+  .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:1.25rem 2rem;}
+  .stat-card{background:var(--white);border-radius:10px;padding:1rem 1.2rem;border:1px solid var(--border);display:flex;align-items:center;gap:.9rem;}
+  .stat-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+  .stat-icon.s1{background:var(--amber-bg);}
+  .stat-icon.s2{background:var(--red-bg);}
+  .stat-icon.s3{background:#fde8d8;}
+  .stat-icon.s4{background:var(--green-bg);}
+  .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:1.9rem;font-weight:700;line-height:1;}
+  .stat-num.c-red{color:var(--red);}
+  .stat-num.c-amber{color:var(--amber);}
+  .stat-num.c-green{color:var(--green);}
+  .stat-label{font-size:.75rem;color:var(--gray);font-weight:500;margin-top:.1rem;}
+
+  .section{padding:0 2rem 2rem;}
+  .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;}
+  .sec-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;}
+  .sec-badge{font-size:.75rem;font-weight:600;padding:.18rem .55rem;border-radius:20px;}
+  .badge-amber{background:var(--amber-bg);color:var(--amber);}
+  .badge-blue{background:#e0f2fe;color:#0369a1;}
+
+  .q-table{width:100%;background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden;border-collapse:collapse;}
+  .q-table thead th{background:var(--navy);color:#94a3b8;font-family:'Barlow Condensed',sans-serif;font-size:.77rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.7rem 1rem;text-align:left;}
+  .q-table tbody tr{border-bottom:1px solid var(--border);}
+  .q-table tbody tr:last-child{border-bottom:none;}
+  .q-table tbody tr:hover{background:#f1f5f9;}
+  .q-table td{padding:.8rem 1rem;font-size:.86rem;vertical-align:middle;}
+
+  .sla-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.22rem .6rem;border-radius:20px;font-size:.76rem;font-weight:600;white-space:nowrap;}
+  .sla-ok{background:var(--green-bg);color:var(--green);}
+  .sla-warn{background:var(--amber-bg);color:var(--amber);}
+  .sla-crit{background:var(--red-bg);color:var(--red);}
+  .sla-urgent{background:#7f1d1d;color:#fca5a5;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+
+  .tag-late{background:#fde8d8;color:#c2410c;font-size:.68rem;font-weight:600;padding:.08rem .4rem;border-radius:8px;margin-left:.35rem;}
+  .tag-photo{background:var(--red-bg);color:var(--red);font-size:.68rem;font-weight:600;padding:.08rem .4rem;border-radius:8px;margin-left:.35rem;}
+  .monto{font-family:'Barlow Condensed',sans-serif;font-size:.98rem;font-weight:700;color:var(--navy-mid);}
+  .neg-tag{background:#eff6ff;color:#1d4ed8;font-size:.73rem;font-weight:600;padding:.12rem .45rem;border-radius:4px;}
+  .resp-c{color:#7c3aed;font-weight:600;font-size:.83rem;}
+  .resp-j{color:#0369a1;font-weight:600;font-size:.83rem;}
+
+  .empty-state{text-align:center;padding:3.5rem 2rem;color:var(--gray);}
+  .empty-icon{font-size:2.8rem;margin-bottom:.75rem;}
+  .empty-text{font-size:1rem;font-weight:600;color:var(--green);}
+  .empty-sub{font-size:.82rem;margin-top:.4rem;}
+
+  .divider{height:1px;background:var(--border);margin:0 2rem 1.5rem;}
+
+  .rev-list{display:grid;gap:.45rem;}
+  .rev-item{background:var(--white);border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:8px;padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;}
+
+  .loading{text-align:center;padding:2.5rem;color:var(--gray);font-size:.88rem;}
+  .footer-note{text-align:center;padding:1.5rem;color:#94a3b8;font-size:.75rem;border-top:1px solid var(--border);margin-top:.5rem;}
+
+  @media(max-width:768px){
+    .stats-bar{grid-template-columns:repeat(2,1fr);}
+    header,.section{padding-left:1rem;padding-right:1rem;}
+    .q-table td,.q-table th{padding:.55rem .55rem;}
+  }
+</style>
+</head>
+<body>
+
+<div id="pin-screen">
+  <div class="pin-logo">PVI Control Operativo 2026</div>
+  <div class="pin-title">Revisión · Lic. Ana</div>
+  <div class="pin-sub">Ingresa tu PIN de acceso</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="pp('1')">1</button><button class="pin-btn" onclick="pp('2')">2</button><button class="pin-btn" onclick="pp('3')">3</button>
+    <button class="pin-btn" onclick="pp('4')">4</button><button class="pin-btn" onclick="pp('5')">5</button><button class="pin-btn" onclick="pp('6')">6</button>
+    <button class="pin-btn" onclick="pp('7')">7</button><button class="pin-btn" onclick="pp('8')">8</button><button class="pin-btn" onclick="pp('9')">9</button>
+    <button class="pin-btn del" onclick="pd()">⌫</button><button class="pin-btn" onclick="pp('0')">0</button><button class="pin-btn del" onclick="pc()">✕</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
+
+<div id="main">
+  <header>
+    <div class="h-left">
+      <div><div class="h-logo">PVI Control Operativo</div><div class="h-title">Cola de Revisión · Ana</div></div>
+      <div class="h-period" id="hperiod">—</div>
+    </div>
+    <div class="h-right">
+      <span class="updated" id="upd">—</span>
+      <button class="btn-refresh" onclick="loadData()">↻ Actualizar</button>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-icon s1">📋</div><div><div class="stat-num c-amber" id="s-pend">—</div><div class="stat-label">Pendientes de revisión</div></div></div>
+    <div class="stat-card"><div class="stat-icon s2">🔴</div><div><div class="stat-num c-red" id="s-sla">—</div><div class="stat-label">SLA vencido (+48hrs)</div></div></div>
+    <div class="stat-card"><div class="stat-icon s3">⏰</div><div><div class="stat-num c-amber" id="s-late">—</div><div class="stat-label">Registros tardíos</div></div></div>
+    <div class="stat-card"><div class="stat-icon s4">✅</div><div><div class="stat-num c-green" id="s-rev">—</div><div class="stat-label">Revisados esta semana</div></div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-title">🟡 Pendientes — más antiguos primero</div>
+      <div class="sec-badge badge-amber" id="b-pend">0 pendientes</div>
+    </div>
+    <div id="queue-wrap"><div class="loading">Cargando cola de revisión…</div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-title">🔵 Revisados — en espera de Laura</div>
+      <div class="sec-badge badge-blue" id="b-rev">0 revisados</div>
+    </div>
+    <div id="rev-wrap"><div class="loading">Cargando…</div></div>
+  </div>
+
+  <div class="footer-note">
+    📝 Las acciones (marcar revisado · observación · devolver) se realizan en Google Sheets.<br>
+    Actualización automática cada 2 min · Última actualización: <span id="ft">—</span>
+  </div>
+</div>
+
+<script>
+const SID='1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk';
+const KEY='AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg';
+const PIN='4892';
+
+let buf='';
+function pp(d){if(buf.length>=4)return;buf+=d;dots();if(buf.length===4)setTimeout(chk,180);}
+function pd(){buf=buf.slice(0,-1);dots();}
+function pc(){buf='';dots();document.getElementById('pin-error').textContent='';}
+function dots(){for(let i=0;i<4;i++)document.getElementById('d'+i).classList.toggle('filled',i<buf.length);}
+function chk(){
+  if(buf===PIN){
+    document.getElementById('pin-screen').classList.add('hidden');
+    document.getElementById('main').classList.add('visible');
+    loadData();setInterval(loadData,120000);
+  }else{document.getElementById('pin-error').textContent='PIN incorrecto.';buf='';dots();}
+}
+
+function fmt(n){return isNaN(n)||n===''?'—':'$'+Number(n).toLocaleString('es-MX');}
+function parseDate(s){
+  if(!s)return null;
+  let d=new Date(s);if(!isNaN(d))return d;
+  const m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m)return new Date(`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`);
+  return null;
+}
+function hrs(s){const d=parseDate(s);if(!d)return null;return(Date.now()-d.getTime())/3600000;}
+function slaTag(h){
+  if(h===null)return{c:'sla-ok',l:'—'};
+  if(h>48)return{c:'sla-urgent',l:`🔴 ${Math.floor(h)}h VENCIDO`};
+  if(h>36)return{c:'sla-crit',l:`🟠 ${Math.floor(h)}h Urgente`};
+  if(h>24)return{c:'sla-warn',l:`🟡 ${Math.floor(h)}h`};
+  return{c:'sla-ok',l:`🟢 ${Math.floor(h)}h`};
+}
+
+async function loadData(){
+  try{
+    const url=`https://sheets.googleapis.com/v4/spreadsheets/${SID}/values:batchGet?`+
+      `ranges=${encodeURIComponent('SEMANA_ACTIVA!E5')}&`+
+      `ranges=${encodeURIComponent('GASTOS!A6:T800')}&key=${KEY}`;
+    const res=await fetch(url);const data=await res.json();
+
+    const periodo=data.valueRanges[0].values?.[0]?.[0]||'—';
+    const rows=(data.valueRanges[1].values||[]).filter(r=>r[9]&&parseFloat(r[9].toString().replace(/[^\d.]/g,''))>0);
+
+    document.getElementById('hperiod').textContent=periodo;
+    const now=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('upd').textContent=`Act. ${now}`;
+    document.getElementById('ft').textContent=now;
+
+    const pending=rows.filter(r=>(r[16]||'').includes('🟡')||(r[16]||'')==='');
+    const revisado=rows.filter(r=>(r[16]||'').includes('🔵'));
+    pending.sort((a,b)=>{const da=parseDate(a[0]),db=parseDate(b[0]);if(!da||!db)return 0;return da-db;});
+
+    const slaV=pending.filter(r=>{const h=hrs(r[0]);return h!==null&&h>48;}).length;
+    const tardios=pending.filter(r=>(r[14]||'').includes('⏰')).length;
+
+    document.getElementById('s-pend').textContent=pending.length;
+    document.getElementById('s-sla').textContent=slaV;
+    document.getElementById('s-late').textContent=tardios;
+    document.getElementById('s-rev').textContent=revisado.length;
+    document.getElementById('b-pend').textContent=`${pending.length} pendientes`;
+    document.getElementById('b-rev').textContent=`${revisado.length} revisados`;
+
+    renderQueue(pending);renderRev(revisado);
+  }catch(e){
+    document.getElementById('queue-wrap').innerHTML='<div class="loading" style="color:#dc2626">Error al cargar. Verifica conexión.</div>';
+  }
+}
+
+function renderQueue(rows){
+  const el=document.getElementById('queue-wrap');
+  if(!rows.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-text">¡Cola vacía! Todo revisado.</div><div class="empty-sub">No hay gastos pendientes en este momento.</div></div>';
+    return;
+  }
+  el.innerHTML=`<table class="q-table"><thead><tr>
+    <th>Fecha compra</th><th>Responsable</th><th>Negocio</th><th>Descripción</th><th>Monto</th><th>Horas pendiente</th>
+  </tr></thead><tbody>
+  ${rows.map(r=>{
+    const fecha=(r[2]||r[0]||'').toString().substring(0,10);
+    const resp=r[3]||'—';
+    const neg=r[4]||'—';
+    const desc=r[7]||'—';
+    const monto=parseFloat((r[9]||'0').toString().replace(/[^\d.]/g,''))||0;
+    const tardio=(r[14]||'').includes('⏰');
+    const sinFoto=(r[15]||'').includes('📸');
+    const h=hrs(r[0]);const sla=slaTag(h);
+    const rc=resp==='Carlos'?'resp-c':'resp-j';
+    return `<tr>
+      <td>${fecha}${tardio?'<span class="tag-late">⏰ Tardío</span>':''}</td>
+      <td><span class="${rc}">${resp}</span></td>
+      <td><span class="neg-tag">${neg}</span></td>
+      <td>${desc}${sinFoto?'<span class="tag-photo">📸</span>':''}</td>
+      <td><span class="monto">${fmt(monto)}</span></td>
+      <td><span class="sla-badge ${sla.c}">${sla.l}</span></td>
+    </tr>`;
+  }).join('')}</tbody></table>`;
+}
+
+function renderRev(rows){
+  const el=document.getElementById('rev-wrap');
+  if(!rows.length){el.innerHTML='<div style="color:#64748b;font-size:.83rem;padding:.75rem;text-align:center;">Sin gastos en estado 🔵 Revisado esta semana.</div>';return;}
+  el.innerHTML=`<div class="rev-list">${rows.slice(0,20).map(r=>{
+    const fecha=(r[2]||r[0]||'').toString().substring(0,10);
+    const resp=r[3]||'—';const neg=r[4]||'—';const desc=r[7]||'—';
+    const monto=parseFloat((r[9]||'0').toString().replace(/[^\d.]/g,''))||0;
+    const rc=resp==='Carlos'?'resp-c':'resp-j';
+    return `<div class="rev-item">
+      <div><span class="${rc}">${resp}</span><span style="margin:0 .4rem;color:#cbd5e1">·</span><span class="neg-tag">${neg}</span><span style="margin-left:.65rem;font-size:.83rem">${desc}</span></div>
+      <div style="display:flex;align-items:center;gap:.8rem;"><span class="monto">${fmt(monto)}</span><span style="color:#94a3b8;font-size:.75rem">${fecha}</span></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+</script>
+</body>
+</html>
