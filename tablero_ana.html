@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PVI · Revisión Ana</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#060c06;--card:#0b140b;--b2:#0f1f0f;--bdr:#1a3a1a;--g1:#4ade80;--g2:#22c55e;--g3:#16a34a;--g4:#86efac;--teal:#2dd4bf;--yel:#fbbf24;--ora:#fb923c;--red:#f87171;--txt:#f0fdf4;--sub:#6b9e6b;--mono:'Space Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--txt)}
+#pin-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);position:relative}
+#pin-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(34,197,94,.07) 0%,transparent 70%);pointer-events:none}
+.pin-logo{font-family:var(--mono);font-size:.65rem;letter-spacing:.3em;color:var(--g3);margin-bottom:2rem;border:1px solid var(--bdr);padding:.3rem .8rem;border-radius:6px}
+.pin-title{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--g1),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem}
+.pin-sub{font-size:.82rem;color:var(--sub);font-family:var(--mono);margin-bottom:3rem}
+.pin-dots{display:flex;gap:1.2rem;margin-bottom:2rem}
+.pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--bdr);transition:all .2s}
+.pin-dot.filled{background:var(--g1);border-color:var(--g1);box-shadow:0 0 10px var(--g1)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,76px);gap:10px}
+.pkey{height:76px;border-radius:14px;border:1px solid var(--bdr);background:var(--card);color:var(--txt);font-size:1.5rem;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Space Grotesk',sans-serif}
+.pkey:hover{background:var(--b2);border-color:var(--g3);color:var(--g1)}.pkey:active{transform:scale(.93)}
+.pkey.del{color:var(--red)}.pkey.zero{grid-column:2}
+.pin-err{color:var(--red);font-size:.82rem;margin-top:1rem;height:1.2rem;text-align:center;font-family:var(--mono)}
+#dashboard{display:none}
+.topbar{background:var(--card);border-bottom:1px solid var(--bdr);padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.t-logo{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;color:var(--g3);border:1px solid var(--bdr);padding:.2rem .55rem;border-radius:5px}
+.t-title{font-size:.95rem;font-weight:700}.t-per{font-size:.72rem;color:var(--sub);font-family:var(--mono)}
+.rbtn{background:none;border:1px solid var(--bdr);color:var(--sub);border-radius:8px;padding:.32rem .7rem;font-size:.78rem;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .15s}
+.rbtn:hover{border-color:var(--g3);color:var(--g1)}
+.page{max-width:960px;margin:0 auto;padding:1.5rem}
+.sl{font-family:var(--mono);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--g3);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.sl::after{content:'';flex:1;height:1px;background:var(--bdr)}
+/* Banner */
+.banner{border-radius:12px;padding:.85rem 1.1rem;margin-bottom:1.25rem;font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.7rem;border:1px solid}
+.banner.R{background:rgba(248,113,113,.06);border-color:rgba(248,113,113,.25);color:var(--red)}
+.banner.Y{background:rgba(251,191,36,.05);border-color:rgba(251,191,36,.2);color:var(--yel)}
+.banner.G{background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.2);color:var(--g1)}
+.bdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.banner.R .bdot{background:var(--red);animation:pulse 1s infinite}.banner.Y .bdot{background:var(--yel)}.banner.G .bdot{background:var(--g1)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* Stats */
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem}
+@media(max-width:600px){.srow{grid-template-columns:repeat(2,1fr)}}
+.sc{background:var(--card);border:1px solid var(--bdr);border-radius:14px;padding:.9rem 1rem}
+.sc .sn{font-size:2rem;font-weight:800;font-family:var(--mono);line-height:1}
+.sc .sl2{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--sub);margin-top:.3rem}
+.sc.R{border-color:rgba(248,113,113,.25)}.sc.Y{border-color:rgba(251,191,36,.2)}.sc.G{border-color:rgba(74,222,128,.2)}
+/* Charts row */
+.cgrid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+@media(max-width:600px){.cgrid2{grid-template-columns:1fr}}
+.cc{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:1.25rem}
+.cc h3{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin-bottom:1rem}
+.cw{position:relative;height:180px}
+/* Queue cards */
+.qcard{background:var(--card);border:1px solid var(--bdr);border-radius:14px;margin-bottom:.75rem;overflow:hidden;transition:border-color .2s}
+.qcard:hover{border-color:var(--g3)}
+.qcard.R{border-left:3px solid var(--red)}.qcard.Y{border-left:3px solid var(--yel)}.qcard.OK{border-left:3px solid var(--g3)}
+.qh{padding:.75rem 1rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.qb{padding:.75rem 1rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem}
+@media(max-width:500px){.qb{grid-template-columns:1fr 1fr}}
+.qtag{font-size:.72rem;background:rgba(74,222,128,.08);border:1px solid var(--bdr);border-radius:20px;padding:.2rem .55rem;font-weight:600;color:var(--g4)}
+.qtag.car{color:var(--g1)}.qtag.jet{color:var(--teal)}
+.sla-pill{border-radius:20px;padding:.22rem .65rem;font-size:.72rem;font-weight:700;white-space:nowrap}
+.sla-pill.R{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+.sla-pill.Y{background:rgba(251,191,36,.1);color:var(--yel);border:1px solid rgba(251,191,36,.25)}
+.sla-pill.OK{background:rgba(74,222,128,.08);color:var(--g1);border:1px solid rgba(74,222,128,.2)}
+.fld .fl{font-size:.62rem;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.fld .fv{font-size:.85rem;font-weight:600;color:var(--txt)}
+.fld .fv.mx{color:var(--ora);font-size:.95rem;font-family:var(--mono)}
+.chip{font-size:.68rem;border-radius:20px;padding:.15rem .5rem;font-weight:600;margin-right:.3rem}
+.chip.T{background:rgba(251,191,36,.1);color:var(--yel);border:1px solid rgba(251,191,36,.2)}
+.chip.F{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.qf{padding:.45rem 1rem;background:rgba(0,0,0,.2);border-top:1px solid var(--bdr)}
+.empty{text-align:center;padding:3rem 1rem;color:var(--sub)}
+.empty .ei{font-size:3rem;margin-bottom:.5rem}
+.sheet-link{display:inline-flex;align-items:center;gap:.4rem;background:var(--g2);color:var(--bg);border-radius:10px;padding:.65rem 1.1rem;text-decoration:none;font-size:.85rem;font-weight:700;margin-top:1rem;font-family:'Space Grotesk',sans-serif}
+.sheet-link:hover{background:var(--g1)}
+.loading{text-align:center;padding:3rem;color:var(--sub);font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div id="pin-screen">
+  <div class="pin-logo">PVI · Control Operativo 2026</div>
+  <div class="pin-title">Revisión — Ana</div>
+  <div class="pin-sub">Validación de gastos · SLA 48hrs</div>
+  <div class="pin-dots"><div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div><div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div></div>
+  <div class="pin-pad">
+    <button class="pkey" onclick="addPin('1')">1</button><button class="pkey" onclick="addPin('2')">2</button><button class="pkey" onclick="addPin('3')">3</button>
+    <button class="pkey" onclick="addPin('4')">4</button><button class="pkey" onclick="addPin('5')">5</button><button class="pkey" onclick="addPin('6')">6</button>
+    <button class="pkey" onclick="addPin('7')">7</button><button class="pkey" onclick="addPin('8')">8</button><button class="pkey" onclick="addPin('9')">9</button>
+    <button class="pkey del" onclick="delPin()">⌫</button><button class="pkey zero" onclick="addPin('0')">0</button>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+</div>
+
+<div id="dashboard">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <span class="t-logo">PVI</span>
+      <div><div class="t-title">📋 Cola de Revisión — Ana</div><div class="t-per" id="hdr-per">—</div></div>
+    </div>
+    <button class="rbtn" onclick="loadData()">↻ Actualizar</button>
+  </div>
+  <div class="page">
+    <div class="banner G" id="banner"><div class="bdot"></div><span id="banner-txt">Cargando...</span></div>
+
+    <div class="srow">
+      <div class="sc" id="sc0"><div class="sn" id="sn0">—</div><div class="sl2">Por revisar</div></div>
+      <div class="sc" id="sc1"><div class="sn" id="sn1">—</div><div class="sl2">SLA vencidos</div></div>
+      <div class="sc" id="sc2"><div class="sn" id="sn2">—</div><div class="sl2">Sin foto</div></div>
+      <div class="sc" id="sc3"><div class="sn" id="sn3">—</div><div class="sl2">Tardíos</div></div>
+    </div>
+
+    <div class="cgrid2">
+      <div class="cc"><h3>⏱ SLA por antigüedad</h3><div class="cw"><canvas id="cSLA"></canvas></div></div>
+      <div class="cc"><h3>👷 Distribución por responsable</h3><div class="cw"><canvas id="cRESP"></canvas></div></div>
+    </div>
+
+    <div class="sl">⏳ cola de revisión — más antiguo primero</div>
+    <div id="queue"><div class="loading">Cargando gastos...</div></div>
+
+    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk/edit" target="_blank">
+      📊 Abrir Sheet para marcar revisado →
+    </a>
+  </div>
+</div>
+
+<script>
+const K='AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg',S='1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk';
+let charts={},buf='';
+function addPin(d){
+  if(buf.length>=4)return;buf+=d;document.getElementById('d'+(buf.length-1)).classList.add('filled');
+  if(buf.length===4){if(buf==='3200'){document.getElementById('pin-screen').style.display='none';document.getElementById('dashboard').style.display='block';loadData();}
+  else{document.getElementById('pin-err').textContent='PIN incorrecto';setTimeout(()=>{buf='';[0,1,2,3].forEach(i=>document.getElementById('d'+i).classList.remove('filled'));document.getElementById('pin-err').textContent='';},800);}}
+}
+function delPin(){if(!buf.length)return;document.getElementById('d'+(buf.length-1)).classList.remove('filled');buf=buf.slice(0,-1);}
+
+async function get(r){const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${S}/values/${encodeURIComponent(r)}?key=${K}`);return(await res.json()).values||[];}
+async function bat1(r){const res=await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${S}/values/${encodeURIComponent(r)}?key=${K}`);return(await res.json()).values?.[0]?.[0]??'';}
+function n(x){return parseFloat(String(x||0).replace(/\$/g,'').replace(/,/g,'').replace(/\.(?=\d{3}(\.|$))/g,''))||0;}
+function mx(x){const v=n(x);return'$'+v.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function hrs(ts){if(!ts)return 0;return(Date.now()-new Date(ts).getTime())/3600000;}
+function slaCls(h){if(h>48)return'R';if(h>36)return'Y';return'OK';}
+function slaTxt(h){if(h>48)return`⚠️ VENCIDO (${Math.floor(h)}h)`;if(h>36)return`🔶 URGENTE (${Math.floor(h)}h)`;if(h>24)return`🟡 HOY (${Math.floor(h)}h)`;return`🟢 OK (${Math.floor(h)}h)`;}
+
+function mk(id,type,labels,data,colors){
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type,data:{labels,datasets:[{data,backgroundColor:colors.map(c=>c+'44'),borderColor:colors,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#6b9e6b',font:{family:'Space Grotesk',size:10},boxWidth:8,padding:10}},tooltip:{backgroundColor:'#0b140b',borderColor:'#1a3a1a',borderWidth:1,titleColor:'#f0fdf4',bodyColor:'#86efac'}},scales:type==='doughnut'?{}:{x:{ticks:{color:'#6b9e6b',font:{size:10}},grid:{color:'rgba(26,58,26,.4)'}},y:{ticks:{color:'#6b9e6b',font:{size:10}},grid:{color:'rgba(26,58,26,.4)'},beginAtZero:true}}}});
+}
+
+async function loadData(){
+  document.getElementById('queue').innerHTML='<div class="loading">Cargando...</div>';
+  try{
+    const [rows,per]=await Promise.all([get('GASTOS!A6:T500'),bat1('SEMANA_ACTIVA!E5')]);
+    document.getElementById('hdr-per').textContent='Semana: '+per;
+
+    const pending=rows.filter(r=>r[16]==='🟡 Pendiente'&&n(r[9])>0);
+    pending.sort((a,b)=>new Date(a[0]||0)-new Date(b[0]||0));
+
+    const venc=pending.filter(r=>hrs(r[0])>48).length;
+    const urg=pending.filter(r=>{const h=hrs(r[0]);return h>36&&h<=48;}).length;
+    const sinF=pending.filter(r=>(r[15]||'').includes('📸')||(r[15]||'').includes('SIN FOTO')||(r[15]||'').toUpperCase().includes('SIN')).length;
+    const tard=pending.filter(r=>r[14]&&r[14]!=='').length;
+    const carP=pending.filter(r=>(r[3]||'').toLowerCase()==='carlos').length;
+    const jetP=pending.filter(r=>(r[3]||'').toLowerCase()==='jethro').length;
+
+    // Banner
+    const bn=document.getElementById('banner');
+    if(venc>0){bn.className='banner R';document.getElementById('banner-txt').textContent=`🚨 ${venc} gasto${venc>1?'s':''} con SLA VENCIDO — revisar de inmediato`;}
+    else if(urg>0){bn.className='banner Y';document.getElementById('banner-txt').textContent=`⚠️ ${urg} gasto${urg>1?'s':''} llegan al límite de SLA hoy`;}
+    else if(!pending.length){bn.className='banner G';document.getElementById('banner-txt').textContent='✅ Cola vacía — todos los gastos están al día';}
+    else{bn.className='banner G';document.getElementById('banner-txt').textContent=`✅ SLA en orden — ${pending.length} gasto${pending.length>1?'s':''} por revisar`;}
+
+    // Stats
+    [['sc0','sn0',pending.length,pending.length>0?'Y':'G'],['sc1','sn1',venc,venc>0?'R':'G'],['sc2','sn2',sinF,sinF>0?'Y':'G'],['sc3','sn3',tard,tard>0?'Y':'G']].forEach(([sc,sn,v,cls])=>{
+      document.getElementById(sc).className='sc '+cls;
+      document.getElementById(sn).innerHTML=`<span style="color:var(--${cls==='R'?'red':cls==='Y'?'yel':'g1'})">${v}</span>`;
+    });
+
+    // Charts
+    mk('cSLA','doughnut',['Vencido >48h','Urgente 36-48h','Hoy 24-36h','OK <24h'],
+      [venc,urg,pending.filter(r=>{const h=hrs(r[0]);return h>24&&h<=36;}).length,pending.filter(r=>hrs(r[0])<=24).length],
+      ['#f87171','#fb923c','#fbbf24','#4ade80']);
+    mk('cRESP','doughnut',['Carlos','Jethro'],[carP,jetP],['#4ade80','#2dd4bf']);
+
+    // Queue
+    if(!pending.length){document.getElementById('queue').innerHTML='<div class="empty"><div class="ei">✅</div><div>No hay gastos pendientes de revisión</div></div>';return;}
+    document.getElementById('queue').innerHTML=pending.map(r=>{
+      const h=hrs(r[0]),cls=slaCls(h),resp=(r[3]||'').toLowerCase();
+      const chips=[];
+      if(r[14]&&r[14]!=='')chips.push('<span class="chip T">⏰ Tardío</span>');
+      if((r[15]||'').toUpperCase().includes('SIN'))chips.push('<span class="chip F">📸 Sin foto</span>');
+      return`<div class="qcard ${cls}">
+        <div class="qh">
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <span class="qtag ${resp}">${r[3]||'—'}</span>
+            <span class="qtag">${r[4]||'—'}</span>
+          </div>
+          <span class="sla-pill ${cls}">${slaTxt(h)}</span>
+        </div>
+        <div class="qb">
+          <div class="fld"><div class="fl">Descripción</div><div class="fv">${r[7]||'—'}</div></div>
+          <div class="fld"><div class="fl">Monto</div><div class="fv mx">${mx(r[9])}</div></div>
+          <div class="fld"><div class="fl">Fecha compra</div><div class="fv">${r[2]||'—'}</div></div>
+          <div class="fld"><div class="fl">Comprobante</div><div class="fv">${r[10]||'—'}</div></div>
+          <div class="fld"><div class="fl">Proveedor</div><div class="fv">${r[8]||'—'}</div></div>
+          <div class="fld"><div class="fl">Semana</div><div class="fv">${r[13]||'—'}</div></div>
+        </div>
+        ${chips.length?`<div class="qf">${chips.join('')}</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){document.getElementById('queue').innerHTML=`<div class="empty">❌ Error: ${e.message}</div>`;}
+}
+</script>
+</body>
+</html>
