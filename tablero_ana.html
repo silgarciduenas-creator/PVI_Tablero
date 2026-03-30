@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PVI — Revisión Ana</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F1117;--s1:#161920;--s2:#1E2028;--s3:#262830;
+  --line:#2A2D35;--line2:#383C47;
+  --ink:#E8EAF0;--ink2:#8B909E;--ink3:#4A4F5E;
+  --red:#F05252;--red2:rgba(240,82,82,.12);--red3:rgba(240,82,82,.06);
+  --amber:#F59E0B;--amber2:rgba(245,158,11,.12);
+  --green:#10B981;--green2:rgba(16,185,129,.1);
+  --blue:#3B82F6;--blue2:rgba(59,130,246,.1);
+  --purple:#8B5CF6;--purple2:rgba(139,92,246,.1);
+  --r:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;}
+
+/* PIN */
+#pin{position:fixed;inset:0;z-index:999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.pin-logo{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;color:var(--ink2);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.4rem;}
+.pin-name{font-size:1.8rem;font-weight:600;color:var(--ink);margin-bottom:.4rem;}
+.pin-role{font-size:.7rem;color:var(--ink3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:3rem;}
+.pin-dots{display:flex;gap:10px;margin-bottom:2.5rem;}
+.pin-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--line2);background:transparent;transition:.18s;}
+.pin-dot.on{background:var(--blue);border-color:var(--blue);box-shadow:0 0 8px rgba(59,130,246,.5);}
+.pin-dot.err{background:var(--red);border-color:var(--red);animation:sh .28s ease;}
+@keyframes sh{0%,100%{transform:translateX(0)}30%{transform:translateX(-5px)}70%{transform:translateX(5px)}}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:240px;width:100%;}
+.pb{height:58px;background:var(--s2);border:1px solid var(--line);border-radius:var(--r);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:1.2rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:.12s;-webkit-user-select:none;user-select:none;}
+.pb:active{background:var(--s3);border-color:var(--blue);transform:scale(.95);}
+.pb .sl{font-size:.46rem;letter-spacing:.1em;color:var(--ink3);}
+.pin-err{margin-top:1rem;font-size:.7rem;color:var(--red);min-height:1rem;text-align:center;font-family:'IBM Plex Mono',monospace;}
+
+/* APP */
+#app{display:none;min-height:100vh;flex-direction:column;}
+#app.on{display:flex;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* HEADER */
+.hdr{background:var(--s1);border-bottom:1px solid var(--line);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.hdr-l{display:flex;align-items:center;gap:.75rem;}
+.hdr-mono{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--blue);letter-spacing:.08em;}
+.hdr-sep{width:1px;height:16px;background:var(--line2);}
+.hdr-name{font-size:.85rem;font-weight:500;}
+.hdr-r{display:flex;align-items:center;gap:.85rem;}
+.live{display:flex;align-items:center;gap:4px;font-size:.62rem;color:var(--green);letter-spacing:.1em;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;}
+.ldot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.utag{font-size:.62rem;color:var(--ink3);font-family:'IBM Plex Mono',monospace;}
+
+/* BODY */
+.body{flex:1;padding:1.25rem 1.5rem 3rem;max-width:1200px;margin:0 auto;width:100%;}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:.75rem;}
+.spin{width:24px;height:24px;border:1.5px solid var(--line2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-size:.75rem;color:var(--ink3);font-family:'IBM Plex Mono',monospace;}
+
+/* ALERT BANNER */
+.alert-banner{display:flex;align-items:center;gap:.85rem;background:var(--red2);border:1px solid rgba(240,82,82,.25);border-radius:var(--r);padding:.85rem 1.1rem;margin-bottom:1.25rem;}
+.ab-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pulse 1.5s infinite;}
+.ab-txt{font-size:.82rem;color:var(--red);font-weight:500;}
+.ab-sub{font-size:.72rem;color:rgba(240,82,82,.7);margin-left:.3rem;}
+.alert-banner.ok{background:var(--green2);border-color:rgba(16,185,129,.25);}
+.alert-banner.ok .ab-dot{background:var(--green);}
+.alert-banner.ok .ab-txt{color:var(--green);}
+
+/* KPI STRIP */
+.kstrip{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;margin-bottom:1.25rem;}
+.kpi{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:.85rem 1rem;position:relative;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.kpi.kr::before{background:var(--red);}
+.kpi.ka::before{background:var(--amber);}
+.kpi.kg::before{background:var(--green);}
+.kpi.kb::before{background:var(--blue);}
+.kpi.kp::before{background:var(--purple);}
+.klbl{font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:.4rem;font-family:'IBM Plex Mono',monospace;}
+.kval{font-size:1.65rem;font-weight:600;color:var(--ink);line-height:1;margin-bottom:.15rem;}
+.kval.r{color:var(--red);}
+.kval.a{color:var(--amber);}
+.kval.g{color:var(--green);}
+.knote{font-size:.6rem;color:var(--ink3);}
+
+/* SECTION */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.sec-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);font-family:'IBM Plex Mono',monospace;display:flex;align-items:center;gap:.5rem;}
+.sec-badge{font-size:.62rem;padding:2px 8px;border-radius:10px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+.sec-badge.r{background:var(--red2);color:var(--red);}
+.sec-badge.a{background:var(--amber2);color:var(--amber);}
+.sec-badge.g{background:var(--green2);color:var(--green);}
+
+/* GASTO ROW (Ana view - dense info) */
+.gasto-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;}
+.gasto-row{
+  background:var(--s1);border:1px solid var(--line);border-radius:var(--r);
+  padding:.9rem 1rem;display:grid;
+  grid-template-columns:auto 1fr auto auto auto;
+  gap:.85rem;align-items:center;
+  transition:border-color .15s;
+}
+.gasto-row:hover{border-color:var(--line2);}
+.gasto-row.vencido{border-left:2px solid var(--red);}
+.gasto-row.urgente{border-left:2px solid var(--amber);}
+.gasto-row.ok-sla{border-left:2px solid var(--green);}
+
+/* SLA badge */
+.sla-badge{
+  font-family:'IBM Plex Mono',monospace;font-size:.68rem;font-weight:500;
+  padding:3px 9px;border-radius:4px;white-space:nowrap;flex-shrink:0;
+}
+.sla-badge.v{background:var(--red2);color:var(--red);}
+.sla-badge.a{background:var(--amber2);color:var(--amber);}
+.sla-badge.g{background:var(--green2);color:var(--green);}
+
+/* Gasto info */
+.gi-resp{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;font-family:'IBM Plex Mono',monospace;color:var(--ink3);margin-bottom:.2rem;}
+.gi-desc{font-size:.83rem;font-weight:500;color:var(--ink);margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gi-tags{display:flex;gap:.4rem;flex-wrap:wrap;}
+.tag{font-size:.6rem;padding:2px 6px;border-radius:3px;background:var(--s3);color:var(--ink3);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+.tag.neg{background:rgba(139,92,246,.1);color:var(--purple);}
+.tag.sub{background:rgba(59,130,246,.08);color:#93C5FD;}
+.tag.tardio{background:var(--amber2);color:var(--amber);}
+.tag.sinfoto{background:var(--red2);color:var(--red);}
+
+/* Monto */
+.gi-monto{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:500;color:var(--ink);white-space:nowrap;text-align:right;}
+.gi-fecha{font-size:.65rem;color:var(--ink3);font-family:'IBM Plex Mono',monospace;white-space:nowrap;text-align:right;}
+
+/* Foto btn */
+.foto-btn{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.65rem;font-family:'IBM Plex Mono',monospace;
+  padding:4px 9px;border-radius:4px;text-decoration:none;
+  transition:.15s;white-space:nowrap;flex-shrink:0;
+}
+.foto-btn.has{background:var(--blue2);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+.foto-btn.has:hover{background:var(--blue);color:#fff;}
+.foto-btn.no{background:var(--red2);color:var(--red);border:1px solid rgba(240,82,82,.2);cursor:default;}
+
+/* RESP FILTER */
+.filter-bar{display:flex;gap:.5rem;margin-bottom:1rem;}
+.fbtn{font-size:.7rem;padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink2);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:.15s;}
+.fbtn.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem 1rem;color:var(--ink3);}
+.empty-icon{font-size:2rem;margin-bottom:.5rem;opacity:.4;}
+
+@media(max-width:900px){
+  .kstrip{grid-template-columns:repeat(3,1fr);}
+  .gasto-row{grid-template-columns:auto 1fr auto;gap:.6rem;}
+  .gi-monto,.gi-fecha,.foto-btn{font-size:.6rem;}
+}
+@media(max-width:600px){
+  .body{padding:1rem;}
+  .hdr{padding:0 1rem;}
+  .kstrip{grid-template-columns:repeat(2,1fr);}
+  .gasto-row{grid-template-columns:1fr;gap:.5rem;}
+}
+</style>
+</head>
+<body>
+
+<div id="pin">
+  <div class="pin-logo">PVI · 2026</div>
+  <div class="pin-name">Ana</div>
+  <div class="pin-role">Revisión contable</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pb" onclick="pp('1')">1</button>
+    <button class="pb" onclick="pp('2')">2<span class="sl">ABC</span></button>
+    <button class="pb" onclick="pp('3')">3<span class="sl">DEF</span></button>
+    <button class="pb" onclick="pp('4')">4<span class="sl">GHI</span></button>
+    <button class="pb" onclick="pp('5')">5<span class="sl">JKL</span></button>
+    <button class="pb" onclick="pp('6')">6<span class="sl">MNO</span></button>
+    <button class="pb" onclick="pp('7')">7<span class="sl">PQRS</span></button>
+    <button class="pb" onclick="pp('8')">8<span class="sl">TUV</span></button>
+    <button class="pb" onclick="pp('9')">9<span class="sl">WXYZ</span></button>
+    <div></div>
+    <button class="pb" onclick="pp('0')">0</button>
+    <button class="pb" onclick="pdel()">⌫</button>
+  </div>
+  <div class="pin-err" id="perr"></div>
+</div>
+
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-mono">PVI</div>
+      <div class="hdr-sep"></div>
+      <div class="hdr-name">Revisión de gastos — Ana</div>
+    </div>
+    <div class="hdr-r">
+      <div class="live"><div class="ldot"></div>En vivo</div>
+      <div class="utag" id="utag">—</div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="loading" id="loading"><div class="spin"></div><p>Cargando gastos...</p></div>
+    <div id="content" style="display:none">
+
+      <div class="alert-banner" id="alert-banner">
+        <div class="ab-dot"></div>
+        <span class="ab-txt" id="alert-txt">—</span>
+        <span class="ab-sub" id="alert-sub"></span>
+      </div>
+
+      <div class="kstrip">
+        <div class="kpi kr"><div class="klbl">SLA vencidos</div><div class="kval r" id="k-venc">—</div><div class="knote">más de 48 hrs</div></div>
+        <div class="kpi ka"><div class="klbl">Pendientes hoy</div><div class="kval a" id="k-pend">—</div><div class="knote">esperando revisión</div></div>
+        <div class="kpi kb"><div class="klbl">Monto total</div><div class="kval" id="k-monto">—</div><div class="knote">en revisión</div></div>
+        <div class="kpi kg"><div class="klbl">Sin alerta foto</div><div class="kval g" id="k-conf">—</div><div class="knote">comprobante OK</div></div>
+        <div class="kpi kp"><div class="klbl">Sin foto</div><div class="kval r" id="k-sinf">—</div><div class="knote">requieren atención</div></div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <button class="fbtn on" onclick="setFilter('todos',this)">Todos</button>
+        <button class="fbtn" onclick="setFilter('Carlos',this)">Carlos</button>
+        <button class="fbtn" onclick="setFilter('Jethro',this)">Jethro</button>
+        <button class="fbtn" onclick="setFilter('vencidos',this)">🔴 Vencidos</button>
+      </div>
+
+      <!-- Gastos vencidos -->
+      <div id="sec-vencidos">
+        <div class="sec-hdr">
+          <div class="sec-title">🔴 SLA Vencido — más de 48 hrs<span class="sec-badge r" id="cnt-v">0</span></div>
+        </div>
+        <div class="gasto-list" id="list-vencidos"></div>
+      </div>
+
+      <!-- Gastos en tiempo -->
+      <div id="sec-activos">
+        <div class="sec-hdr">
+          <div class="sec-title">⏳ En tiempo — dentro de 48 hrs<span class="sec-badge a" id="cnt-a">0</span></div>
+        </div>
+        <div class="gasto-list" id="list-activos"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const AK='AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg';
+const SID='1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk';
+const BASE=`https://sheets.googleapis.com/v4/spreadsheets/${SID}/values`;
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+let allPending=[];
+let filterMode='todos';
+
+// PIN
+const PIN='3200'; let pb='';
+function pp(d){if(pb.length>=4)return;pb+=d;ud();if(pb.length===4)setTimeout(vp,100);}
+function pdel(){pb=pb.slice(0,-1);document.getElementById('perr').textContent='';ud(false);}
+function ud(e){for(let i=0;i<4;i++){const el=document.getElementById('d'+i);el.className='pin-dot'+(i<pb.length?(e?' err':' on'):'');}}
+function vp(){
+  if(pb===PIN){
+    const ps=document.getElementById('pin');ps.style.transition='opacity .3s ease';ps.style.opacity='0';
+    setTimeout(()=>{ps.style.display='none';document.getElementById('app').classList.add('on');init();},300);
+  }else{ud(true);document.getElementById('perr').textContent='PIN incorrecto';setTimeout(()=>{pb='';ud(false);document.getElementById('perr').textContent='';},800);}
+}
+
+function mxn(v){
+  if(!v&&v!==0)return 0;
+  let s=v.toString().replace(/\$/g,'').replace(/\s/g,'').trim();
+  if(/\.\d{3}$/.test(s)||/\.\d{3}\./.test(s))s=s.replace(/\./g,'');
+  s=s.replace(',','.');return parseFloat(s)||0;
+}
+function pdate(s){if(!s)return null;const d=new Date(s.toString().trim());return isNaN(d.getTime())?null:d;}
+function fmt(n){const v=mxn(n);return'$'+Math.round(v).toLocaleString('es-MX');}
+function fd(d){if(!d)return'—';return d.getDate()+' '+MES[d.getMonth()];}
+async function gr(r){const res=await fetch(`${BASE}/${encodeURIComponent(r)}?key=${AK}`);if(!res.ok)throw new Error(res.status);return(await res.json()).values||[];}
+
+function getSLAClass(sla){
+  if(!sla)return'a';
+  const s=sla.toString();
+  if(s.includes('VENCIDO'))return'v';
+  if(s.includes('restantes'))return'g';
+  return'a';
+}
+
+function getSLAText(sla){
+  if(!sla)return'Sin SLA';
+  const s=sla.toString();
+  const m=s.match(/(\d+)hrs/);
+  if(!m)return s.substring(0,25);
+  const hrs=parseInt(m[1]);
+  if(s.includes('VENCIDO'))return`⚠ ${hrs}h vencido`;
+  return`${hrs}h restantes`;
+}
+
+function renderRow(row){
+  const resp=(row[3]||'').toString().trim();
+  const neg=(row[4]||'').toString().trim();
+  const desc=(row[7]||'').toString().trim()||'Sin descripción';
+  const monto=mxn(row[9]);
+  const sub=(row[6]||'').toString().trim();
+  const foto=(row[11]||'').toString().trim();
+  const alertFoto=(row[15]||'').toString().trim();
+  const tardio=(row[14]||'').toString().trim();
+  const sla=(row[19]||'').toString().trim();
+  const fecha=pdate(row[2]);
+  const notas_ana=(row[17]||'').toString().trim();
+  
+  const slaClass=getSLAClass(sla);
+  const rowClass=slaClass==='v'?'vencido':slaClass==='a'?'urgente':'ok-sla';
+  const hasFoto=foto && !alertFoto.includes('SIN FOTO');
+  
+  // parse hrs for sorting
+  const mSLA=sla.match(/(\d+)hrs/);
+  const hrsNum=mSLA?parseInt(mSLA[1]):0;
+  
+  return{
+    html:`<div class="gasto-row ${rowClass}" data-resp="${resp}">
+      <div class="sla-badge ${slaClass}">${getSLAText(sla)}</div>
+      <div>
+        <div class="gi-resp">${resp} · ${fd(fecha)}</div>
+        <div class="gi-desc" title="${desc}">${desc}</div>
+        <div class="gi-tags">
+          <span class="tag neg">${neg}</span>
+          ${sub?`<span class="tag sub">${sub}</span>`:''}
+          ${tardio.includes('TARDÍO')?'<span class="tag tardio">⏰ tardío</span>':''}
+          ${!hasFoto?'<span class="tag sinfoto">📸 sin foto</span>':''}
+          ${notas_ana?`<span class="tag" style="background:rgba(245,158,11,.1);color:#F59E0B">💬 ${notas_ana.substring(0,30)}</span>`:''}
+        </div>
+      </div>
+      <div class="gi-monto">${fmt(monto)}<br><span class="gi-fecha">${(row[10]||'').toString().trim()||'—'}</span></div>
+      ${hasFoto
+        ?`<a href="${foto}" target="_blank" class="foto-btn has">📎 Ver foto</a>`
+        :`<span class="foto-btn no">📸 Sin foto</span>`}
+    </div>`,
+    isVencido: slaClass==='v',
+    hrs: hrsNum,
+    resp
+  };
+}
+
+function setFilter(mode, el){
+  filterMode=mode;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  if(el)el.classList.add('on');
+  renderLists();
+}
+
+function renderLists(){
+  let rows=allPending;
+  if(filterMode==='Carlos')rows=rows.filter(r=>r.resp==='Carlos');
+  else if(filterMode==='Jethro')rows=rows.filter(r=>r.resp==='Jethro');
+  else if(filterMode==='vencidos')rows=rows.filter(r=>r.isVencido);
+  
+  const vencidos=rows.filter(r=>r.isVencido).sort((a,b)=>b.hrs-a.hrs);
+  const activos=rows.filter(r=>!r.isVencido);
+  
+  document.getElementById('cnt-v').textContent=vencidos.length;
+  document.getElementById('cnt-a').textContent=activos.length;
+  document.getElementById('list-vencidos').innerHTML=vencidos.length
+    ?vencidos.map(r=>r.html).join('')
+    :'<div class="empty"><div class="empty-icon">✅</div>Sin SLA vencidos</div>';
+  document.getElementById('list-activos').innerHTML=activos.length
+    ?activos.map(r=>r.html).join('')
+    :'<div class="empty"><div class="empty-icon">🕐</div>Sin gastos pendientes en tiempo</div>';
+  document.getElementById('sec-vencidos').style.display=filterMode==='vencidos'||vencidos.length?'block':'block';
+}
+
+async function init(){
+  try{
+    const gastos=await gr('GASTOS!A6:T2000');
+    const pending=gastos.filter(r=>{
+      if(r.length<17)return false;
+      const est=(r[16]||'').toString().trim();
+      return est.includes('Pendiente')||est===''||(!est.includes('Aprobado')&&!est.includes('Revisado'));
+    });
+    
+    // Build stats
+    let totalMonto=0,vencidos=0,sinFoto=0,conFoto=0;
+    allPending=pending.map(row=>{
+      totalMonto+=mxn(row[9]);
+      const sla=(row[19]||'').toString();
+      if(sla.includes('VENCIDO'))vencidos++;
+      const af=(row[15]||'').toString();
+      if(af.includes('SIN FOTO'))sinFoto++;else conFoto++;
+      return renderRow(row);
+    });
+    
+    // KPIs
+    document.getElementById('k-venc').textContent=vencidos;
+    document.getElementById('k-pend').textContent=pending.length;
+    document.getElementById('k-monto').textContent=fmt(totalMonto);
+    document.getElementById('k-conf').textContent=conFoto;
+    document.getElementById('k-sinf').textContent=sinFoto;
+    
+    // Alert banner
+    const ab=document.getElementById('alert-banner');
+    const at=document.getElementById('alert-txt');
+    const as_=document.getElementById('alert-sub');
+    if(vencidos>0){
+      ab.className='alert-banner';
+      at.textContent=`${vencidos} gastos con SLA vencido — requieren revisión urgente`;
+      as_.textContent=`· ${pending.length} total pendientes · ${fmt(totalMonto)} en revisión`;
+    }else if(pending.length>0){
+      ab.className='alert-banner';
+      ab.style.background='rgba(245,158,11,.1)';
+      ab.style.borderColor='rgba(245,158,11,.25)';
+      ab.querySelector('.ab-dot').style.background='var(--amber)';
+      at.style.color='var(--amber)';
+      at.textContent=`${pending.length} gastos pendientes — dentro del SLA`;
+      as_.textContent='';
+    }else{
+      ab.className='alert-banner ok';
+      at.style.color='var(--green)';
+      at.textContent='Todo al día — sin gastos pendientes';
+      as_.textContent='';
+    }
+    
+    renderLists();
+    
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').style.display='block';
+    document.getElementById('utag').textContent='Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  }catch(err){
+    document.getElementById('loading').innerHTML=`<div style="color:var(--red);text-align:center;font-size:.8rem">Error al cargar.<br><small>${err.message}</small></div>`;
+  }
+}
+</script>
+</body>
+</html>
