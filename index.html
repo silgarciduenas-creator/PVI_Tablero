@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PVI — Tablero Ejecutivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0f172a; --soft: #64748b; --line: #e2e8f0; --bg: #f0f4f8;
+  --orange: #ea580c; --green: #16a34a; --amber: #d97706; --red: #dc2626;
+  --teal: #0891b2; --purple: #7c3aed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+/* ── PIN ── */
+#pin-screen {
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; background: var(--ink); color: #fff;
+}
+.pin-brand { font-size: 0.72rem; letter-spacing: .2em; text-transform: uppercase; color: #475569; margin-bottom: 1.5rem; }
+.pin-title { font-size: 1.9rem; font-weight: 800; margin-bottom: 0.25rem; }
+.pin-role { color: var(--orange); }
+.pin-sub { font-size: 0.85rem; color: #475569; margin-bottom: 2.5rem; }
+.pin-dots { display: flex; gap: 1rem; margin-bottom: 2rem; }
+.pin-dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #334155; transition: all .2s; }
+.pin-dot.filled { background: var(--orange); border-color: var(--orange); }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 76px); gap: 12px; }
+.pkey { height: 76px; border-radius: 16px; border: none; background: #1e293b;
+  color: #fff; font-size: 1.5rem; font-weight: 700; cursor: pointer;
+  transition: background .15s, transform .1s; font-family: 'Outfit', sans-serif; }
+.pkey:hover { background: #334155; }
+.pkey:active { transform: scale(.93); }
+.pkey.del { background: #dc262618; color: #f87171; }
+.pkey.zero { grid-column: 2; }
+.pin-err { color: #f87171; font-size: 0.85rem; margin-top: 1rem; height: 1.2rem; text-align: center; }
+
+/* ── DASHBOARD ── */
+#dashboard { display: none; }
+.top-bar {
+  background: var(--ink); color: #fff; padding: 1rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+.top-bar h1 { font-size: 1rem; font-weight: 700; }
+.top-bar p  { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
+.refresh-btn { background: #1e293b; border: none; color: #94a3b8; border-radius: 8px;
+  padding: 0.4rem 0.8rem; font-size: 0.8rem; cursor: pointer; font-family:'Outfit',sans-serif; }
+.refresh-btn:hover { color: #fff; }
+
+.page { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
+
+/* Semáforo general */
+.semaforo-hero { border-radius: 16px; padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+  font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; }
+.semaforo-hero.green { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+.semaforo-hero.amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.semaforo-hero.red   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+/* Main grid */
+.main-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) and (min-width: 769px) { .main-grid { grid-template-columns: 1fr 1fr; } }
+
+/* Section cards */
+.sec-card { background: #fff; border-radius: 16px; border: 1px solid var(--line);
+  overflow: hidden; }
+.sec-card-head { padding: 0.85rem 1rem; border-bottom: 1px solid var(--line); }
+.sec-card-head h2 { font-size: 0.82rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--soft); }
+.sec-card-body { padding: 0.5rem 0; }
+
+.metric-row { display: flex; justify-content: space-between; align-items: center;
+  padding: 0.55rem 1rem; border-bottom: 1px solid #f8fafc; }
+.metric-row:last-child { border-bottom: none; }
+.metric-row .ml { font-size: 0.85rem; color: var(--soft); }
+.metric-row .mv { font-size: 0.92rem; font-weight: 700; }
+.metric-row .mv.big { font-size: 1.2rem; }
+.metric-row .mv.orange { color: var(--orange); }
+.metric-row .mv.green  { color: var(--green); }
+.metric-row .mv.red    { color: var(--red); }
+.metric-row .mv.amber  { color: var(--amber); }
+.metric-row .mv.teal   { color: var(--teal); }
+.metric-row .mv.income { color: var(--teal); }
+
+/* Person divider */
+.person-head { padding: 0.6rem 1rem; background: var(--bg); font-size: 0.78rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--line); }
+.person-head.carlos { color: var(--ink); }
+.person-head.jethro { color: var(--purple); }
+
+/* Alert pills */
+.alert-row { display: flex; justify-content: space-between; align-items: center;
+  padding: 0.55rem 1rem; border-bottom: 1px solid #f8fafc; }
+.alert-row:last-child { border-bottom: none; }
+.alert-row .al { font-size: 0.83rem; color: var(--soft); }
+.alert-num { font-size: 1rem; font-weight: 800; border-radius: 8px; padding: 0.1rem 0.5rem; }
+.alert-num.danger { color: var(--red); background: #fef2f2; }
+.alert-num.ok     { color: var(--green); }
+.alert-num.warn   { color: var(--amber); }
+
+/* Pct bar */
+.pct-bar-wrap { padding: 0.75rem 1rem; border-top: 1px solid var(--line); }
+.pct-label { display: flex; justify-content: space-between; font-size: 0.78rem;
+  color: var(--soft); margin-bottom: 0.4rem; }
+.pct-bar { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.pct-fill { height: 100%; border-radius: 4px; background: var(--orange); transition: width .5s; }
+
+.loading { text-align: center; padding: 2rem; color: var(--soft); }
+.timestamp { text-align: center; font-size: 0.72rem; color: #94a3b8; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<div id="pin-screen">
+  <div class="pin-brand">PVI · Control Operativo 2026</div>
+  <div class="pin-title">Tablero <span class="pin-role">Ejecutivo</span></div>
+  <div class="pin-sub">Roberto Garcidueñas · Solo lectura</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pkey" onclick="addPin('1')">1</button>
+    <button class="pkey" onclick="addPin('2')">2</button>
+    <button class="pkey" onclick="addPin('3')">3</button>
+    <button class="pkey" onclick="addPin('4')">4</button>
+    <button class="pkey" onclick="addPin('5')">5</button>
+    <button class="pkey" onclick="addPin('6')">6</button>
+    <button class="pkey" onclick="addPin('7')">7</button>
+    <button class="pkey" onclick="addPin('8')">8</button>
+    <button class="pkey" onclick="addPin('9')">9</button>
+    <button class="pkey del" onclick="delPin()">⌫</button>
+    <button class="pkey zero" onclick="addPin('0')">0</button>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+</div>
+
+<div id="dashboard">
+  <div class="top-bar">
+    <div>
+      <h1>📊 Tablero Ejecutivo PVI 2026</h1>
+      <p id="hdr-per">Cargando...</p>
+    </div>
+    <button class="refresh-btn" onclick="loadData()">↻ Actualizar</button>
+  </div>
+  <div class="page">
+    <div id="semaforo-hero" class="semaforo-hero green">⏳ Cargando estado del sistema...</div>
+    <div class="main-grid">
+      <div class="sec-card" id="card-semana">
+        <div class="sec-card-head"><h2>💰 Resumen de Semana</h2></div>
+        <div class="sec-card-body"><div class="loading">...</div></div>
+      </div>
+      <div class="sec-card" id="card-fondos">
+        <div class="sec-card-head"><h2>👷 Fondos Disponibles</h2></div>
+        <div class="sec-card-body"><div class="loading">...</div></div>
+      </div>
+      <div class="sec-card" id="card-alertas">
+        <div class="sec-card-head"><h2>⚠️ Alertas Activas</h2></div>
+        <div class="sec-card-body"><div class="loading">...</div></div>
+      </div>
+    </div>
+    <div class="timestamp" id="ts"></div>
+  </div>
+</div>
+
+<script>
+const KEY = 'AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg';
+const SID = '1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk';
+const PIN = '1958';
+let buf = '';
+
+function addPin(d) {
+  if (buf.length >= 4) return;
+  buf += d;
+  document.getElementById('d'+(buf.length-1)).classList.add('filled');
+  if (buf.length === 4) {
+    if (buf === PIN) {
+      document.getElementById('pin-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadData();
+    } else {
+      document.getElementById('pin-err').textContent = 'PIN incorrecto';
+      setTimeout(() => { buf=''; ['d0','d1','d2','d3'].forEach(i=>document.getElementById(i).classList.remove('filled')); document.getElementById('pin-err').textContent=''; }, 900);
+    }
+  }
+}
+function delPin() {
+  if (!buf.length) return;
+  document.getElementById('d'+(buf.length-1)).classList.remove('filled');
+  buf = buf.slice(0,-1);
+}
+
+async function batchGet(ranges) {
+  const params = ranges.map(r=>`ranges=${encodeURIComponent(r)}`).join('&');
+  const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SID}/values:batchGet?${params}&key=${KEY}`);
+  const j = await r.json();
+  return (j.valueRanges||[]).map(vr=>vr.values?.[0]?.[0]??'0');
+}
+
+function mxn(n) {
+  const v = parseFloat(String(n||0).replace(/\$/g,'').replace(/\./g,'x').replace(',','.').replace(/x/g,'')) || 0;
+  return '$'+v.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+
+function pctStr(n) {
+  const v = parseFloat(n||0);
+  return (v > 1 ? (v*100).toFixed(0) : (v*100).toFixed(0)) + '%';
+}
+
+async function loadData() {
+  try {
+    const cells = await batchGet([
+      'SEMANA_ACTIVA!E5',   // 0  período
+      'TABLERO!D8',         // 1  total gastado aprobado
+      'TABLERO!D9',         // 2  pendiente de aprobar
+      'TABLERO!D10',        // 3  total registrado
+      'TABLERO!H8',         // 4  Carlos disponible
+      'TABLERO!H9',         // 5  Carlos gastado
+      'TABLERO!H10',        // 6  Carlos pendiente
+      'TABLERO!H11',        // 7  Jethro disponible
+      'TABLERO!H12',        // 8  Jethro gastado
+      'TABLERO!H13',        // 9  Jethro pendiente
+      'TABLERO!L8',         // 10 SLA vencidos
+      'TABLERO!L9',         // 11 Gastos sin estado
+      'TABLERO!L10',        // 12 Registros tardíos
+      'SEMANA_ACTIVA!E16',  // 13 Ingresos Carlos
+      'SEMANA_ACTIVA!E32',  // 14 Ingresos Jethro
+      'SEMANA_ACTIVA!E18',  // 15 Semáforo Carlos
+      'SEMANA_ACTIVA!E34',  // 16 Semáforo Jethro
+      'SEMANA_ACTIVA!E48',  // 17 Semáforo general
+      'SEMANA_ACTIVA!E47',  // 18 % ejecutado
+      'SEMANA_ACTIVA!E46',  // 19 presupuesto
+      'SEMANA_ACTIVA!E44',  // 20 total gastado ambos
+      'SEMANA_ACTIVA!E15',  // 21 repuesto Carlos
+      'SEMANA_ACTIVA!E31',  // 22 repuesto Jethro
+    ]);
+
+    const [periodo, gastAprobado, pendiente, totalReg,
+           cdisponible, cgastado, cpendiente,
+           jdisponible, jgastado, jpendiente,
+           slaVenc, sinEstado, tardios,
+           ingCarlos, ingJethro, semCarlos, semJethro,
+           semGen, pctEj, presup, totalGast, repCarlos, repJethro] = cells;
+
+    document.getElementById('hdr-per').textContent = 'Semana: ' + periodo;
+    document.getElementById('ts').textContent = 'Actualizado: ' + new Date().toLocaleString('es-MX');
+
+    // Semáforo general
+    const semEl = document.getElementById('semaforo-hero');
+    const sg = String(semGen);
+    if (sg.includes('🔴')||sg.includes('CRÍTICO')||parseFloat(slaVenc)>0) {
+      semEl.className='semaforo-hero red';
+      semEl.textContent = '🔴 Alertas críticas — revisar SLA y fondos';
+    } else if (sg.includes('🟡')||sg.includes('ALERTA')) {
+      semEl.className='semaforo-hero amber';
+      semEl.textContent = '🟡 Sistema con pendientes — monitorear';
+    } else {
+      semEl.className='semaforo-hero green';
+      semEl.textContent = '🟢 Sistema operando en orden — ' + periodo;
+    }
+
+    // Presupuesto bar
+    const pct = Math.min(parseFloat(String(pctEj).replace('%',''))||0, 100);
+    const pctDisp = pct > 1 ? pct.toFixed(0) : (pct*100).toFixed(0);
+
+    // Card: Semana
+    document.getElementById('card-semana').innerHTML = `
+      <div class="sec-card-head"><h2>💰 Resumen de Semana</h2></div>
+      <div class="sec-card-body">
+        <div class="metric-row"><span class="ml">Total gastado (aprobado)</span><span class="mv orange">${mxn(gastAprobado)}</span></div>
+        <div class="metric-row"><span class="ml">Pendiente de aprobar</span><span class="mv ${parseFloat(pendiente)>0?'amber':'green'}">${mxn(pendiente)}</span></div>
+        <div class="metric-row"><span class="ml">Total registrado</span><span class="mv">${mxn(totalReg)}</span></div>
+        <div class="metric-row"><span class="ml">Presupuesto semana</span><span class="mv">${mxn(presup)}</span></div>
+        <div class="pct-bar-wrap">
+          <div class="pct-label"><span>% Ejecutado</span><span>${pctDisp}%</span></div>
+          <div class="pct-bar"><div class="pct-fill" style="width:${pctDisp}%"></div></div>
+        </div>
+      </div>`;
+
+    // Card: Fondos
+    function semColor(s) {
+      if (!s) return 'teal';
+      if (s.includes('🔴')||s.includes('CRÍTICO')) return 'red';
+      if (s.includes('🟡')||s.includes('ALERTA')) return 'amber';
+      return 'green';
+    }
+    document.getElementById('card-fondos').innerHTML = `
+      <div class="sec-card-head"><h2>👷 Fondos Disponibles</h2></div>
+      <div class="sec-card-body">
+        <div class="person-head carlos">Carlos</div>
+        <div class="metric-row"><span class="ml">Gastado semana</span><span class="mv">${mxn(cgastado)}</span></div>
+        <div class="metric-row"><span class="ml">Pendiente aprobar</span><span class="mv">${mxn(cpendiente)}</span></div>
+        <div class="metric-row"><span class="ml">Repuesto por Laura</span><span class="mv green">+${mxn(repCarlos)}</span></div>
+        <div class="metric-row"><span class="ml">💵 Ingresos al fondo</span><span class="mv income">+${mxn(ingCarlos)}</span></div>
+        <div class="metric-row"><span class="ml" style="font-weight:600">Disponible</span><span class="mv big ${semColor(semCarlos)}">${mxn(cdisponible)}</span></div>
+        <div class="person-head jethro" style="margin-top:0.25rem">Jethro</div>
+        <div class="metric-row"><span class="ml">Gastado semana</span><span class="mv">${mxn(jgastado)}</span></div>
+        <div class="metric-row"><span class="ml">Pendiente aprobar</span><span class="mv">${mxn(jpendiente)}</span></div>
+        <div class="metric-row"><span class="ml">Repuesto por Laura</span><span class="mv green">+${mxn(repJethro)}</span></div>
+        <div class="metric-row"><span class="ml">💵 Ingresos al fondo</span><span class="mv income">+${mxn(ingJethro)}</span></div>
+        <div class="metric-row"><span class="ml" style="font-weight:600">Disponible</span><span class="mv big ${semColor(semJethro)}">${mxn(jdisponible)}</span></div>
+      </div>`;
+
+    // Card: Alertas
+    const sla = parseInt(slaVenc)||0;
+    const sin = parseInt(sinEstado)||0;
+    const tard = parseInt(tardios)||0;
+    document.getElementById('card-alertas').innerHTML = `
+      <div class="sec-card-head"><h2>⚠️ Alertas Activas</h2></div>
+      <div class="sec-card-body">
+        <div class="alert-row"><span class="al">SLA vencidos (Ana)</span><span class="alert-num ${sla>0?'danger':'ok'}">${sla}</span></div>
+        <div class="alert-row"><span class="al">Gastos sin estado</span><span class="alert-num ${sin>0?'warn':'ok'}">${sin}</span></div>
+        <div class="alert-row"><span class="al">Registros tardíos</span><span class="alert-num ${tard>0?'warn':'ok'}">${tard}</span></div>
+        <div class="alert-row"><span class="al">Semáforo Carlos</span><span style="font-size:.85rem;font-weight:700">${semCarlos}</span></div>
+        <div class="alert-row"><span class="al">Semáforo Jethro</span><span style="font-size:.85rem;font-weight:700">${semJethro}</span></div>
+      </div>`;
+
+  } catch(e) {
+    document.getElementById('semaforo-hero').textContent = '❌ Error al cargar datos: ' + e.message;
+    document.getElementById('semaforo-hero').className = 'semaforo-hero red';
+  }
+}
+</script>
+</body>
+</html>
