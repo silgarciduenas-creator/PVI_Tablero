@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>PVI · Campo</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0f;--c1:#13131a;--c2:#1c1c28;--c3:#252535;
+  --br:rgba(255,255,255,0.08);
+  --tx:#eeeef5;--mu:#5a5a7a;--di:#333350;
+  --am:#f59e0b;--am2:#fbbf24;
+  --gn:#22c55e;--yw:#eab308;--rd:#ef4444;--bl:#60a5fa;
+  --fn:'Bebas Neue',sans-serif;
+  --fb:'Plus Jakarta Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-tap-highlight-color:transparent;height:100%}
+body{
+  background:var(--bg);color:var(--tx);
+  font-family:var(--fb);font-size:14px;
+  min-height:100dvh;max-width:430px;margin:0 auto;
+  display:flex;flex-direction:column;
+}
+
+/* ── PIN ── */
+#PIN{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;
+}
+#PIN::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--am),var(--am2),var(--am));
+}
+.p-logo{font-family:var(--fn);font-size:56px;letter-spacing:8px;color:var(--am);line-height:1;margin-bottom:6px}
+.p-sub{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mu);margin-bottom:52px}
+.p-dots{display:flex;gap:14px;margin-bottom:40px}
+.p-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--c3);background:transparent;transition:.15s}
+.p-dot.on{background:var(--am);border-color:var(--am);box-shadow:0 0 8px rgba(245,158,11,.5)}
+.p-grid{display:grid;grid-template-columns:repeat(3,76px);gap:8px}
+.pn{
+  height:68px;
+  background:var(--c2);border:1px solid var(--br);border-radius:14px;
+  color:var(--tx);font-family:var(--fn);font-size:26px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background .1s,border-color .1s,transform .07s;
+}
+.pn:active{background:var(--c3);border-color:var(--am);transform:scale(.94)}
+.pn.sm{font-family:var(--fb);font-size:15px;color:var(--mu)}
+.p-err{color:var(--rd);font-size:12px;min-height:16px;margin-top:18px;letter-spacing:.3px}
+
+/* ── TOPBAR ── */
+#APP{display:none;flex-direction:column;flex:1;min-height:100dvh}
+.topbar{
+  background:var(--c1);border-bottom:1px solid var(--br);
+  height:50px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 14px;
+  position:sticky;top:0;z-index:50;flex-shrink:0;
+}
+.t-logo{font-family:var(--fn);font-size:20px;letter-spacing:3px;color:var(--am)}
+.t-user{
+  background:var(--c3);border:1px solid var(--br);
+  border-radius:20px;padding:3px 10px;
+  font-size:12px;font-weight:600;letter-spacing:.2px;
+}
+.t-right{display:flex;align-items:center;gap:10px}
+.t-sig{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--gn);box-shadow:0 0 6px var(--gn);
+}
+.t-sig.warn{background:var(--yw);box-shadow:0 0 6px var(--yw)}
+.t-sig.crit{background:var(--rd);box-shadow:0 0 6px var(--rd)}
+.t-sig.spin{animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.t-btn{
+  background:none;border:none;color:var(--mu);
+  font-size:17px;cursor:pointer;padding:8px;border-radius:8px;
+}
+.t-btn:active{color:var(--am)}
+
+/* ── TABS ── */
+.tabs{
+  background:var(--c1);border-bottom:1px solid var(--br);
+  display:flex;flex-shrink:0;
+}
+.tab{
+  flex:1;padding:11px 0;background:none;border:none;
+  color:var(--mu);font-family:var(--fb);font-size:11px;
+  font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  cursor:pointer;border-bottom:2px solid transparent;
+  transition:color .15s,border-color .15s;
+}
+.tab.on{color:var(--am);border-bottom-color:var(--am)}
+
+/* ── PANELS ── */
+.pnl{display:none;padding:14px;overflow-y:auto;flex:1}
+.pnl.on{display:block}
+
+/* ── WEEK CHIP ── */
+.wchip{
+  background:var(--c2);border:1px solid var(--br);
+  border-radius:8px;padding:7px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.wchip-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu)}
+.wchip-val{font-family:var(--fn);font-size:15px;letter-spacing:.3px;color:var(--am2)}
+
+/* ── SALDO HERO ── */
+.hero{
+  background:var(--c1);border:1px solid var(--br);
+  border-radius:16px;padding:18px;margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.hero.ok::before{background:var(--gn)}
+.hero.warn::before{background:var(--yw)}
+.hero.crit::before{background:var(--rd)}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.hero-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:3px}
+.hero-amt{font-family:var(--fn);font-size:52px;line-height:1}
+.hero-amt.ok{color:var(--gn)}.hero-amt.warn{color:var(--yw)}.hero-amt.crit{color:var(--rd)}
+.hero-sub{font-size:12px;color:var(--mu);margin-bottom:14px}
+.hero-sig{font-size:26px;line-height:1}
+.prog{background:var(--c3);border-radius:4px;height:5px;margin-bottom:14px;overflow:hidden}
+.prog-f{height:100%;border-radius:4px;transition:width .5s ease}
+.prog-f.ok{background:var(--gn)}.prog-f.warn{background:var(--yw)}.prog-f.crit{background:var(--rd)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--br);padding-top:12px}
+.stat{text-align:center;padding:0 6px;border-right:1px solid var(--br)}
+.stat:last-child{border-right:none}
+.stat-v{font-family:var(--fn);font-size:19px;line-height:1;margin-bottom:3px}
+.stat-l{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--mu)}
+.alert-box{border-radius:8px;padding:9px 12px;font-size:12px;line-height:1.4;margin-top:10px}
+.ab-ok  {background:rgba(34,197,94,.09);border:1px solid rgba(34,197,94,.2);color:#86efac}
+.ab-warn{background:rgba(234,179,8,.09);border:1px solid rgba(234,179,8,.2);color:#fde68a}
+.ab-crit{background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
+
+/* ── SEC HDR ── */
+.shdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin:18px 0 9px;
+}
+.shdr-t{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mu)}
+.shdr-n{background:var(--c2);border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600}
+
+/* ── GASTO ITEMS ── */
+.glist{display:flex;flex-direction:column;gap:7px}
+.gi{
+  background:var(--c1);border:1px solid var(--br);border-left:3px solid;
+  border-radius:12px;padding:11px 13px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.gi.gn{border-left-color:var(--gn)}
+.gi.bl{border-left-color:var(--bl)}
+.gi.yw{border-left-color:var(--yw)}
+.gi.am{border-left-color:var(--am)}
+.gi-ico{font-size:18px;flex-shrink:0;width:24px;text-align:center;margin-top:1px}
+.gi-body{flex:1;min-width:0}
+.gi-r1{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:3px}
+.gi-desc{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.gi-amt{font-family:var(--fn);font-size:17px;flex-shrink:0}
+.gi-r2{display:flex;align-items:center;justify-content:space-between}
+.gi-neg{font-size:11px;color:var(--mu)}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px}
+.b-gn{background:rgba(34,197,94,.12);color:#86efac}
+.b-bl{background:rgba(96,165,250,.12);color:#93c5fd}
+.b-yw{background:rgba(234,179,8,.12);color:#fde68a}
+.b-am{background:rgba(245,158,11,.12);color:#fcd34d}
+.gi-nota{margin-top:6px;font-size:11px;padding:4px 8px;border-radius:6px;background:rgba(234,179,8,.07);color:#fde68a;line-height:1.4}
+
+/* ── HISTORIAL KPIs ── */
+.hkpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+.hk{background:var(--c1);border:1px solid var(--br);border-radius:12px;padding:13px}
+.hk-l{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--mu);margin-bottom:5px}
+.hk-v{font-family:var(--fn);font-size:24px;line-height:1}
+
+/* ── FILTROS ── */
+.frow{display:flex;gap:7px;margin-bottom:12px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}
+.frow::-webkit-scrollbar{display:none}
+.fchip{
+  flex-shrink:0;background:var(--c2);border:1px solid var(--br);
+  border-radius:20px;padding:5px 12px;
+  font-size:11px;font-weight:500;color:var(--mu);
+  cursor:pointer;transition:all .12s;white-space:nowrap;
+}
+.fchip.on{background:var(--am);border-color:var(--am);color:#000;font-weight:700}
+
+/* ── EMPTY / LOADING ── */
+.empty{text-align:center;padding:36px 20px;color:var(--mu);font-size:13px}
+.empty-i{font-size:34px;margin-bottom:8px}
+.ldg{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:13px;padding:18px 0}
+.spin{animation:rot 1s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
+.errbx{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);border-radius:12px;padding:13px;color:#fca5a5;font-size:12px;line-height:1.6;margin-bottom:12px}
+.errbx b{display:block;font-size:13px;margin-bottom:5px}
+
+/* ── BOTTOM ── */
+.bbar{background:var(--c1);border-top:1px solid var(--br);padding:7px 14px;font-size:10px;color:var(--mu);text-align:center;flex-shrink:0}
+
+/* ── DEBUG ── */
+.dbgw{padding:8px 14px 20px}
+.dbg{background:var(--c1);border:1px solid var(--br);border-radius:10px;font-family:monospace;font-size:10px}
+.dbg summary{padding:9px 13px;cursor:pointer;color:var(--di)}
+.dbg-b{padding:0 13px 13px;color:var(--di);max-height:180px;overflow-y:auto;white-space:pre-wrap;line-height:1.5}
+
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.up{animation:up .2s ease forwards}
+</style>
+</head>
+<body>
+
+<!-- PIN -->
+<div id="PIN">
+  <div class="p-logo">PVI</div>
+  <div class="p-sub">Tablero de Campo</div>
+  <div class="p-dots">
+    <div class="p-dot" id="d0"></div>
+    <div class="p-dot" id="d1"></div>
+    <div class="p-dot" id="d2"></div>
+    <div class="p-dot" id="d3"></div>
+  </div>
+  <div class="p-grid">
+    <button type="button" class="pn" onclick="p('1')">1</button>
+    <button type="button" class="pn" onclick="p('2')">2</button>
+    <button type="button" class="pn" onclick="p('3')">3</button>
+    <button type="button" class="pn" onclick="p('4')">4</button>
+    <button type="button" class="pn" onclick="p('5')">5</button>
+    <button type="button" class="pn" onclick="p('6')">6</button>
+    <button type="button" class="pn" onclick="p('7')">7</button>
+    <button type="button" class="pn" onclick="p('8')">8</button>
+    <button type="button" class="pn" onclick="p('9')">9</button>
+    <button type="button" class="pn sm" onclick="pDel()">⌫</button>
+    <button type="button" class="pn" onclick="p('0')">0</button>
+    <button type="button" class="pn sm" onclick="pClr()">✕</button>
+  </div>
+  <div class="p-err" id="perr"></div>
+</div>
+
+<!-- APP -->
+<div id="APP">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:9px">
+      <span class="t-logo">PVI</span>
+      <span class="t-user" id="tu">—</span>
+    </div>
+    <div class="t-right">
+      <div class="t-sig" id="sig"></div>
+      <button type="button" class="t-btn" onclick="load()">↻</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab on" id="tb0" onclick="tab(0)">Esta Semana</button>
+    <button type="button" class="tab"    id="tb1" onclick="tab(1)">Mi Historial</button>
+  </div>
+
+  <!-- Semana -->
+  <div class="pnl on" id="p0">
+    <div id="e0"></div>
+    <div class="ldg" id="ld0"><span class="spin">◌</span> Conectando…</div>
+    <div id="c0" style="display:none">
+      <div class="wchip">
+        <span class="wchip-lbl">Semana activa</span>
+        <span class="wchip-val" id="wlbl">—</span>
+      </div>
+      <div class="hero" id="hero">
+        <div class="hero-top">
+          <div>
+            <div class="hero-lbl">Saldo disponible</div>
+            <div class="hero-amt" id="hamt">—</div>
+            <div class="hero-sub">de <span id="hfondo">—</span> asignados esta semana</div>
+          </div>
+          <div class="hero-sig" id="hsig">—</div>
+        </div>
+        <div class="prog"><div class="prog-f" id="hbar" style="width:0%"></div></div>
+        <div class="stats">
+          <div class="stat"><div class="stat-v" id="sgast">$0</div><div class="stat-l">Gastado</div></div>
+          <div class="stat"><div class="stat-v" id="sapro" style="color:var(--gn)">$0</div><div class="stat-l">Aprobado</div></div>
+          <div class="stat"><div class="stat-v" id="spend" style="color:var(--yw)">$0</div><div class="stat-l">Pendiente</div></div>
+        </div>
+        <div id="halert"></div>
+      </div>
+      <div class="shdr">
+        <span class="shdr-t">Mis gastos esta semana</span>
+        <span class="shdr-n" id="scnt">0</span>
+      </div>
+      <div class="glist" id="gl0"></div>
+    </div>
+  </div>
+
+  <!-- Historial -->
+  <div class="pnl" id="p1">
+    <div id="e1"></div>
+    <div class="ldg" id="ld1" style="display:none"><span class="spin">◌</span> Cargando…</div>
+    <div id="c1" style="display:none">
+      <div class="hkpis">
+        <div class="hk"><div class="hk-l">Total registrado</div><div class="hk-v" id="htot">—</div></div>
+        <div class="hk"><div class="hk-l">Aprobado ✓</div><div class="hk-v" style="color:var(--gn)" id="hapr">—</div></div>
+        <div class="hk"><div class="hk-l">Pendiente</div><div class="hk-v" style="color:var(--yw)" id="hpen">—</div></div>
+        <div class="hk"><div class="hk-l">Total gastos</div><div class="hk-v" id="hcnt">—</div></div>
+      </div>
+      <div class="frow" id="frow">
+        <div class="fchip on" onclick="fil('*',this)">Todos</div>
+        <div class="fchip" onclick="fil('pendiente',this)">🟡 Pendiente</div>
+        <div class="fchip" onclick="fil('revisado',this)">🔵 Revisado</div>
+        <div class="fchip" onclick="fil('aprobado',this)">🟢 Aprobado</div>
+        <div class="fchip" onclick="fil('observacion',this)">🟠 Observación</div>
+      </div>
+      <div class="shdr">
+        <span class="shdr-t">Todos mis gastos</span>
+        <span class="shdr-n" id="hcnt2">0</span>
+      </div>
+      <div class="glist" id="gl1"></div>
+    </div>
+  </div>
+
+  <div class="bbar" id="bbar">PVI Control Operativo 2026</div>
+</div>
+
+<!-- Debug -->
+<div class="dbgw">
+  <div class="dbg">
+    <details><summary>🔧 Diagnóstico (Silvia)</summary>
+    <div class="dbg-b" id="dbg">—</div></details>
+  </div>
+</div>
+
+<script>
+/* ══ CONFIG ══════════════════════════════════════════ */
+const C = {
+  SID : '1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk',
+  KEY : 'AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg',
+  USERS : {
+    '2403': { name:'Carlos', fondo:118380 },
+    '1304': { name:'Jethro', fondo:40000  },
+  },
+};
+
+/* ══ STATE ══════════════════════════════════════════ */
+let U=null, ALL=[], WEEK=[], FI=null, FF=null, FLBL='', WN=0, FONDO=0;
+let FILT='*', LOG=[];
+
+/* ══ HELPERS ════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const show = id => $(id).style.display='block';
+const hide = id => $(id).style.display='none';
+const log  = s  => LOG.push(s);
+
+function mxn(v){
+  if(v===null||v===undefined||v==='')return 0;
+  return parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0;
+}
+function fmt(n){
+  return '$'+Math.abs(Math.round(n||0)).toLocaleString('es-MX');
+}
+// Handles: DD/MM/YYYY, YYYY-MM-DD, Excel serial (>40000)
+function toDate(v){
+  if(!v&&v!==0)return null;
+  // Excel serial number (Google Sheets stores dates as numbers)
+  if(typeof v==='number'||(/^\d{5}$/.test(String(v).trim()))){
+    const n=typeof v==='number'?v:parseInt(v);
+    if(n>40000&&n<60000) return new Date((n-25569)*86400000);
+  }
+  const s=String(v).trim();
+  let m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m) return new Date(+m[3],+m[2]-1,+m[1]);
+  m=s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3]);
+  const d=new Date(s); return isNaN(d)?null:d;
+}
+function fmtD(d){
+  return d?d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}):'—';
+}
+function isoWk(d){
+  const u=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=u.getUTCDay()||7;
+  u.setUTCDate(u.getUTCDate()+4-day);
+  const y=new Date(Date.UTC(u.getUTCFullYear(),0,1));
+  return Math.ceil((((u-y)/864e5)+1)/7);
+}
+// normalize header strings: lowercase, replace newlines/spaces runs with single space
+function norm(s){ return String(s).toLowerCase().replace(/[\r\n]+/g,' ').replace(/\s+/g,' ').trim(); }
+
+function isApr(g){ return /aprobado|🟢/i.test(g.est); }
+function isObs(g){ return /observaci|🟠/i.test(g.est); }
+function isPend(g){ return /pendiente|🟡/i.test(g.est); }
+
+/* ══ API ════════════════════════════════════════════ */
+async function api(range){
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${C.SID}/values/${encodeURIComponent(range)}?key=${C.KEY}`;
+  log(`GET ${range}`);
+  const r=await fetch(url);
+  log(` → ${r.status}`);
+  if(!r.ok){
+    const b=await r.json().catch(()=>({}));
+    throw new Error(b.error?.message||`HTTP ${r.status}`);
+  }
+  const d=await r.json();
+  return d.values||[];
+}
+
+/* ══ PIN ════════════════════════════════════════════ */
+let PIN='';
+function p(d){ if(PIN.length>=4)return; PIN+=d; dots(); if(PIN.length===4)auth(); }
+function pDel(){ PIN=PIN.slice(0,-1); dots(); }
+function pClr(){ PIN=''; dots(); }
+function dots(){
+  [0,1,2,3].forEach(i=>$('d'+i).classList.toggle('on',i<PIN.length));
+}
+function auth(){
+  if(C.USERS[PIN]){
+    U=C.USERS[PIN];
+    $('PIN').style.display='none';
+    $('APP').style.display='flex';
+    $('tu').textContent=U.name;
+    load();
+  } else {
+    $('perr').textContent='PIN incorrecto';
+    setTimeout(()=>{ PIN=''; dots(); $('perr').textContent=''; },1200);
+  }
+}
+
+/* ══ TABS ════════════════════════════════════════════ */
+function tab(n){
+  [0,1].forEach(i=>{
+    $('p'+i).classList.toggle('on',i===n);
+    $('tb'+i).classList.toggle('on',i===n);
+  });
+  if(n===1 && ALL.length>0 && $('c1').style.display==='none') renderHist();
+}
+
+/* ══ LOAD ════════════════════════════════════════════ */
+async function load(){
+  LOG=[];
+  log(`PVI Campo — ${U.name} — ${new Date().toLocaleString('es-MX')}`);
+
+  $('e0').innerHTML='';
+  show('ld0'); hide('c0');
+  const sig=$('sig'); sig.className='t-sig spin';
+
+  try {
+    /* 1. SEMANA_ACTIVA E5:H48 */
+    const sa=await api('SEMANA_ACTIVA!E5:H48');
+    log(`SA filas: ${sa.length}`);
+    log(`SA[0]: ${JSON.stringify(sa[0])}`);   // E5,F5,G5,H5
+    log(`SA[2]: ${JSON.stringify(sa[2])}`);   // E7 = fondo Carlos
+    log(`SA[3]: ${JSON.stringify(sa[3])}`);   // E8 = fondo Jethro
+
+    const sav = (row,col) => (sa[row]&&sa[row][col]!==undefined)?sa[row][col]:'';
+
+    FLBL = sav(0,0);              // E5 = label semana
+    FI   = toDate(sav(0,2));      // G5 = fecha inicio (serial or string)
+    FF   = toDate(sav(0,3));      // H5 = fecha fin
+    // Ajustar zonas horarias: usar inicio/fin del día local
+    if(FI){ FI=new Date(FI); FI.setHours(0,0,0,0); }
+    if(FF){ FF=new Date(FF); FF.setHours(23,59,59,999); }
+
+    const carlos = U.name==='Carlos';
+    FONDO = mxn(sav(carlos?2:3,0));           // E7 o E8
+    if(!FONDO) FONDO = U.fondo;               // fallback config
+
+    // Calcular número de semana desde label
+    const mlbl = FLBL.toLowerCase().match(/^(\d{1,2})\s+([a-z]+)/);
+    const MES={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11};
+    WN = mlbl ? isoWk(new Date(2026,MES[mlbl[2].substring(0,3)]||0,+mlbl[1])) : isoWk(new Date());
+    log(`Semana: "${FLBL}" | WN:${WN} | FI:${FI} | FF:${FF} | Fondo:${FONDO}`);
+
+    /* 2. GASTOS A4:T500 */
+    const graw = await api('GASTOS!A4:T500');
+    log(`GASTOS filas: ${graw.length}`);
+    if(graw.length<2) throw new Error('Tab GASTOS vacía o sin acceso.');
+
+    // Fila 0 = headers (row 4 del sheet), Fila 1 = labels Form/AUTO (row 5), Datos desde fila 2
+    const HDR = graw[0];
+    log(`HDR[0..5]: ${JSON.stringify(HDR.slice(0,6))}`);
+
+    // Map headers → índices (normaliza \n → espacio)
+    const hmap={};
+    HDR.forEach((h,i)=>{ hmap[norm(h)]=i; });
+    const col=(...ks)=>{ for(const k of ks){ if(hmap[k]!==undefined)return hmap[k]; } return -1; };
+
+    const CI={
+      fecha : col('fecha compra','fecha de compra','fecha','marca temporal'),
+      resp  : col('responsable','operador','nombre'),
+      email : col('dirección de correo electrónico','correo electrónico','correo','email'),
+      neg   : col('negocio','empresa','área','area'),
+      sub   : col('subcategoría','subcategoria','sub'),
+      desc  : col('descripción del gasto. ej: \'cloro granulado 5kg para alberca\'',
+                  'descripción del gasto','descripción','descripcion','description','detalle'),
+      monto : col('monto ($mxn)','monto (mxn)','monto','importe','amount'),
+      sem   : col('semana','semana #','# semana'),
+      tardio: col('⏰ tardío','tardío','tardio'),
+      est   : col('estado','status'),
+      notas : col('notas ana','notas ана','notas'),
+      sla   : col('⏱ sla ana','sla ana','sla'),
+    };
+    log(`CI: ${JSON.stringify(CI)}`);
+
+    const gv=(row,i)=> i>=0?(row[i]||''):'';
+
+    // Parsear desde índice 2 (saltar headers y fila Form/AUTO)
+    const myN=U.name.toLowerCase();
+    ALL = graw.slice(2).map(row=>{
+      const m=mxn(gv(row,CI.monto)); if(!m)return null;
+      let resp=String(gv(row,CI.resp)).trim();
+      // fallback por email
+      if(!resp && CI.email>=0){
+        const em=String(row[CI.email]||'').toLowerCase();
+        if(em.includes('carlos'))resp='Carlos';
+        else if(em.includes('jethro')||em.includes('jet'))resp='Jethro';
+      }
+      if(!resp.toLowerCase().includes(myN))return null;
+      const wkRaw=parseInt(gv(row,CI.sem))||0;
+      return {
+        fecha : toDate(gv(row,CI.fecha)),
+        resp,
+        neg   : gv(row,CI.neg)||'Sin negocio',
+        sub   : gv(row,CI.sub),
+        desc  : gv(row,CI.desc)||gv(row,CI.neg)||'Sin descripción',
+        monto : m,
+        wk    : wkRaw,
+        tardio: gv(row,CI.tardio),
+        est   : gv(row,CI.est)||'🟡 Pendiente',
+        notas : gv(row,CI.notas),
+        sla   : gv(row,CI.sla),
+      };
+    }).filter(Boolean);
+
+    log(`Mis gastos: ${ALL.length}`);
+
+    // Filtrar semana activa
+    WEEK = ALL.filter(g=>{
+      // Prioridad 1: columna SEMANA del sheet
+      if(g.wk && g.wk===WN) return true;
+      // Prioridad 2: rango de fechas
+      if(FI&&FF&&g.fecha) return g.fecha>=FI && g.fecha<=FF;
+      // Prioridad 3: isoWeek de la fecha
+      if(g.fecha) return isoWk(g.fecha)===WN;
+      return false;
+    });
+    log(`Semana activa: ${WEEK.length} gastos`);
+
+    renderSem();
+    // Pre-render historial si ya está en tab 1
+    if($('p1').classList.contains('on')) renderHist();
+
+    hide('ld0'); show('c0');
+    // Semáforo por estado de gastos
+    const hasObs=ALL.some(isObs);
+    const hasPend=ALL.some(isPend);
+    sig.className='t-sig'+(hasObs?' crit':hasPend?' warn':'');
+    $('bbar').textContent=`Actualizado: ${new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}`;
+
+  } catch(err){
+    log(`ERROR: ${err.message}`);
+    hide('ld0'); sig.className='t-sig crit';
+    const is403=/403|permission|denied|restricted/i.test(err.message);
+    $('e0').innerHTML=`<div class="errbx"><b>❌ Sin conexión con el Sheet</b>${err.message}${is403?'<br><span style="color:var(--di)">Verifica: Sheet → Compartir → Cualquier persona con el enlace → Lector</span>':''}</div>`;
+  }
+
+  $('dbg').textContent=LOG.join('\n');
+}
+
+/* ══ RENDER SEMANA ═════════════════════════════════ */
+function renderSem(){
+  $('wlbl').textContent = FLBL||'—';
+
+  const tot  = WEEK.reduce((s,g)=>s+g.monto,0);
+  const apro = WEEK.filter(isApr).reduce((s,g)=>s+g.monto,0);
+  const pend = tot-apro;
+  const disp = FONDO-tot;
+  const pct  = FONDO>0?Math.min(100,Math.round(tot/FONDO*100)):0;
+
+  const lvl=disp<5000?'crit':disp<10000?'warn':'ok';
+  const sig=disp<5000?'🔴':disp<10000?'🟡':'🟢';
+
+  $('hero').className='hero '+lvl;
+  $('hamt').className='hero-amt '+lvl;
+  $('hamt').textContent=fmt(disp);
+  $('hfondo').textContent=fmt(FONDO);
+  $('hsig').textContent=sig;
+  $('hbar').className='prog-f '+lvl;
+  $('hbar').style.width=pct+'%';
+  $('sgast').textContent=fmt(tot);
+  $('sapro').textContent=fmt(apro);
+  $('spend').textContent=fmt(pend);
+
+  const al=$('halert');
+  if(disp<5000)      al.innerHTML=`<div class="alert-box ab-crit">⚠️ Saldo crítico — notifica a Roberto para reposición urgente</div>`;
+  else if(disp<10000)al.innerHTML=`<div class="alert-box ab-warn">⚡ Saldo bajo — considera solicitar reposición</div>`;
+  else               al.innerHTML=`<div class="alert-box ab-ok">✅ Saldo en orden esta semana</div>`;
+
+  $('scnt').textContent=WEEK.length;
+  $('gl0').innerHTML=WEEK.length
+    ?[...WEEK].reverse().map(gi).join('')
+    :`<div class="empty"><div class="empty-i">📋</div>Sin gastos esta semana</div>`;
+}
+
+/* ══ RENDER HISTORIAL ══════════════════════════════ */
+function renderHist(){
+  hide('ld1'); show('c1');
+  const tot=ALL.reduce((s,g)=>s+g.monto,0);
+  const apr=ALL.filter(isApr).reduce((s,g)=>s+g.monto,0);
+  $('htot').textContent=fmt(tot);
+  $('hapr').textContent=fmt(apr);
+  $('hpen').textContent=fmt(tot-apr);
+  $('hcnt').textContent=ALL.length;
+  applyFil();
+}
+
+/* ══ FILTROS ════════════════════════════════════════ */
+function fil(v,el){
+  FILT=v;
+  $('frow').querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  applyFil();
+}
+function applyFil(){
+  let rows=[...ALL].reverse();
+  if(FILT!=='*') rows=rows.filter(g=>{
+    if(FILT==='aprobado')   return isApr(g);
+    if(FILT==='revisado')   return /revisado|🔵/i.test(g.est);
+    if(FILT==='observacion')return isObs(g);
+    if(FILT==='pendiente')  return isPend(g);
+    return true;
+  });
+  $('hcnt2').textContent=rows.length;
+  $('gl1').innerHTML=rows.length
+    ?rows.map(gi).join('')
+    :`<div class="empty"><div class="empty-i">🔍</div>Sin resultados</div>`;
+}
+
+/* ══ GASTO ITEM ═════════════════════════════════════ */
+function gi(g){
+  const e=g.est;
+  const apr=/aprobado|🟢/i.test(e), rev=/revisado|🔵/i.test(e), obs=isObs(e?e:'');
+  const cls=apr?'gn':rev?'bl':obs?'yw':'am';
+  const ico=apr?'🟢':rev?'🔵':obs?'🟠':'🟡';
+  const txt=apr?'Aprobado':rev?'Revisado':obs?'Observación':'Pendiente';
+  const bcls=apr?'b-gn':rev?'b-bl':obs?'b-yw':'b-am';
+  const tard=g.tardio&&String(g.tardio).includes('TARDÍO')?'<span style="font-size:10px;color:var(--yw)"> ⏰</span>':'';
+  const nota=g.notas?`<div class="gi-nota">💬 ${g.notas}</div>`:'';
+  const fecha=g.fecha?fmtD(g.fecha):'—';
+  return `<div class="gi ${cls} up">
+  <div class="gi-ico">${ico}</div>
+  <div class="gi-body">
+    <div class="gi-r1">
+      <div class="gi-desc">${g.desc}${tard}</div>
+      <div class="gi-amt">${fmt(g.monto)}</div>
+    </div>
+    <div class="gi-r2">
+      <span class="gi-neg">${g.neg}${g.sub?' · '+g.sub:''} · ${fecha}</span>
+      <span class="badge ${bcls}">${txt}</span>
+    </div>
+    ${nota}
+  </div>
+</div>`;
+}
+</script>
+</body>
+</html>
