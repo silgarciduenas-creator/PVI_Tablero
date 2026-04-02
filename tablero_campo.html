@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PVI — Campo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0a;--s1:#141414;--s2:#1e1e1e;--s3:#2a2a2a;--border:rgba(255,255,255,0.09);--text:#f0f0f0;--muted:#666;--dim:#444;--amber:#f59e0b;--amber2:#fbbf24;--green:#22c55e;--yellow:#eab308;--red:#ef4444;--blue:#60a5fa;--fn:'Bebas Neue',sans-serif;--fb:'Plus Jakarta Sans',sans-serif;--r:12px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:14px;min-height:100dvh;max-width:480px;margin:0 auto;overflow-x:hidden}
+#pin-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px}
+#pin-screen::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--amber),var(--amber2),var(--amber))}
+.pin-logo{font-family:var(--fn);font-size:52px;letter-spacing:6px;color:var(--amber);margin-bottom:4px;line-height:1}
+.pin-sub{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:48px}
+.pin-dots{display:flex;gap:16px;margin-bottom:36px}
+.dot{width:11px;height:11px;border-radius:50%;border:2px solid var(--s3);background:transparent;transition:all .15s}
+.dot.on{background:var(--amber);border-color:var(--amber)}
+.num-pad{display:grid;grid-template-columns:repeat(3,80px);gap:8px}
+.nb{height:70px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--fn);font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .1s,transform .08s}
+.nb:active{background:var(--s3);border-color:var(--amber);transform:scale(.95)}
+.nb.action{font-family:var(--fb);font-size:16px;color:var(--muted)}
+.pin-err{color:var(--red);font-size:12px;min-height:18px;margin-top:16px;text-align:center}
+#app{display:none;flex-direction:column;min-height:100dvh}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:50}
+.tb-left{display:flex;align-items:center;gap:10px}
+.tb-logo{font-family:var(--fn);font-size:22px;letter-spacing:3px;color:var(--amber)}
+.tb-badge{background:var(--s3);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600}
+.tb-right{display:flex;align-items:center;gap:8px}
+.btn-ref{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:8px;border-radius:8px}
+.btn-ref:active{color:var(--amber)}
+.ts-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.ts-dot.err{background:var(--red);box-shadow:0 0 6px var(--red)}
+.ts-dot.loading{background:var(--yellow);animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.tab-bar{background:var(--s1);border-bottom:1px solid var(--border);display:flex}
+.tab-btn{flex:1;padding:12px 0;background:none;border:none;color:var(--muted);font-family:var(--fb);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab-panel{display:none;padding:16px;flex:1;overflow-y:auto}
+.tab-panel.active{display:block}
+.week-chip{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.wc-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.wc-val{font-family:var(--fn);font-size:16px;color:var(--amber2)}
+.saldo-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden}
+.saldo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.saldo-card.ok::before{background:var(--green)}.saldo-card.warn::before{background:var(--yellow)}.saldo-card.crit::before{background:var(--red)}
+.sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.sc-lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.sc-num{font-family:var(--fn);line-height:1;font-size:52px;margin-bottom:4px}
+.sc-num.ok{color:var(--green)}.sc-num.warn{color:var(--yellow)}.sc-num.crit{color:var(--red)}
+.sc-sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+.prog-wrap{background:var(--s3);border-radius:4px;height:6px;margin-bottom:16px;overflow:hidden}
+.prog-bar{height:100%;border-radius:4px;transition:width .6s ease}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);padding-top:14px}
+.stat{text-align:center;padding:0 8px;border-right:1px solid var(--border)}
+.stat:last-child{border-right:none}
+.stat-v{font-family:var(--fn);font-size:20px;line-height:1;margin-bottom:4px}
+.stat-l{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.i-alert{border-radius:8px;padding:10px 14px;font-size:12px;line-height:1.5;margin-top:12px}
+.ia-crit{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+.ia-warn{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.25);color:#fde68a}
+.ia-ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#86efac}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px}
+.sec-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.sec-count{background:var(--s2);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600}
+.gastos-list{display:flex;flex-direction:column;gap:8px}
+.gi{background:var(--s1);border:1px solid var(--border);border-left:3px solid;border-radius:var(--r);padding:12px 14px;display:flex;align-items:center;gap:12px}
+.gi-icon{font-size:20px;flex-shrink:0;width:26px;text-align:center}
+.gi-body{flex:1;min-width:0}
+.gi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px}
+.gi-desc{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.gi-monto{font-family:var(--fn);font-size:18px;flex-shrink:0}
+.gi-bot{display:flex;align-items:center;justify-content:space-between}
+.gi-neg{font-size:11px;color:var(--muted)}
+.gi-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px}
+.gi.aprobado{border-left-color:var(--green)}.gi.revisado{border-left-color:var(--blue)}.gi.observacion{border-left-color:var(--yellow)}.gi.pendiente{border-left-color:var(--amber)}
+.b-ap{background:rgba(34,197,94,.12);color:#86efac}.b-rv{background:rgba(96,165,250,.12);color:#93c5fd}.b-ob{background:rgba(234,179,8,.12);color:#fde68a}.b-pe{background:rgba(245,158,11,.12);color:#fcd34d}
+.hist-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.hk{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.hk-l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.hk-v{font-family:var(--fn);font-size:26px;line-height:1}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fc{flex-shrink:0;background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap}
+.fc.active{background:var(--amber);border-color:var(--amber);color:#000;font-weight:700}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:20px 0}
+.spin{animation:spin 1s linear infinite;display:inline-block;font-size:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-card{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:var(--r);padding:14px 16px;color:#fca5a5;font-size:12px;line-height:1.6;margin-bottom:14px}
+.err-card strong{display:block;font-size:13px;margin-bottom:6px}
+.bottom-bar{background:var(--s1);border-top:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--muted);text-align:center;flex-shrink:0}
+.dbg-wrap{margin:8px 16px 24px}
+.dbg{background:var(--s1);border:1px solid var(--border);border-radius:10px;font-size:10px;font-family:monospace}
+.dbg summary{padding:10px 14px;cursor:pointer;color:var(--dim);user-select:none}
+.dbg-body{padding:0 14px 14px;color:var(--dim);max-height:300px;overflow-y:auto;white-space:pre-wrap;line-height:1.6}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .25s ease forwards}
+</style>
+</head>
+<body>
+
+<div id="pin-screen">
+  <div class="pin-logo">PVI</div>
+  <div class="pin-sub">Tablero de Campo</div>
+  <div class="pin-dots" id="dots">
+    <div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="num-pad">
+    <button type="button" class="nb" onclick="p('1')">1</button>
+    <button type="button" class="nb" onclick="p('2')">2</button>
+    <button type="button" class="nb" onclick="p('3')">3</button>
+    <button type="button" class="nb" onclick="p('4')">4</button>
+    <button type="button" class="nb" onclick="p('5')">5</button>
+    <button type="button" class="nb" onclick="p('6')">6</button>
+    <button type="button" class="nb" onclick="p('7')">7</button>
+    <button type="button" class="nb" onclick="p('8')">8</button>
+    <button type="button" class="nb" onclick="p('9')">9</button>
+    <button type="button" class="nb action" onclick="pDel()">⌫</button>
+    <button type="button" class="nb" onclick="p('0')">0</button>
+    <button type="button" class="nb action" onclick="pClr()">✕</button>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="tb-left">
+      <span class="tb-logo">PVI</span>
+      <span class="tb-badge" id="tb-user">—</span>
+    </div>
+    <div class="tb-right">
+      <div class="ts-dot" id="ts-dot"></div>
+      <button type="button" class="btn-ref" onclick="loadAll()">↻</button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button type="button" class="tab-btn active" id="tab-s-btn" onclick="switchTab('s')">Esta Semana</button>
+    <button type="button" class="tab-btn" id="tab-h-btn" onclick="switchTab('h')">Mi Historial</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-s">
+    <div id="err-s"></div>
+    <div class="loading" id="load-s"><span class="spin">◌</span>&nbsp;Conectando…</div>
+    <div id="con-s" style="display:none">
+      <div class="week-chip">
+        <span class="wc-label">Semana activa</span>
+        <span class="wc-val" id="sem-lbl">—</span>
+      </div>
+      <div class="saldo-card ok" id="saldo-card">
+        <div class="sc-top">
+          <div>
+            <div class="sc-lbl">Saldo disponible</div>
+            <div class="sc-num ok" id="sc-disp">—</div>
+            <div class="sc-sub">de <span id="sc-fondo">—</span> asignados</div>
+          </div>
+          <div style="font-size:28px" id="sc-sem">🟢</div>
+        </div>
+        <div class="prog-wrap"><div class="prog-bar" id="prog" style="width:0%"></div></div>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-v" id="st-g">$0</div><div class="stat-l">Gastado</div></div>
+          <div class="stat"><div class="stat-v" style="color:var(--green)" id="st-a">$0</div><div class="stat-l">Aprobado</div></div>
+          <div class="stat"><div class="stat-v" style="color:var(--yellow)" id="st-p">$0</div><div class="stat-l">Pendiente</div></div>
+        </div>
+        <div id="sc-alt"></div>
+      </div>
+      <div class="sec-hdr">
+        <span class="sec-title">Mis gastos esta semana</span>
+        <span class="sec-count" id="cnt-s">0</span>
+      </div>
+      <div class="gastos-list" id="list-s"></div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-h">
+    <div id="err-h"></div>
+    <div class="loading" id="load-h" style="display:none"><span class="spin">◌</span>&nbsp;Cargando…</div>
+    <div id="con-h" style="display:none">
+      <div class="hist-kpis">
+        <div class="hk"><div class="hk-l">Total registrado</div><div class="hk-v" id="hk-t">—</div></div>
+        <div class="hk"><div class="hk-l">Aprobado ✓</div><div class="hk-v" style="color:var(--green)" id="hk-a">—</div></div>
+        <div class="hk"><div class="hk-l">Pendiente</div><div class="hk-v" style="color:var(--yellow)" id="hk-p">—</div></div>
+        <div class="hk"><div class="hk-l">N° gastos</div><div class="hk-v" id="hk-n">—</div></div>
+      </div>
+      <div class="filter-row">
+        <div class="fc active" onclick="setF('todos',this)">Todos</div>
+        <div class="fc" onclick="setF('pendiente',this)">🟡 Pendiente</div>
+        <div class="fc" onclick="setF('revisado',this)">🔵 Revisado</div>
+        <div class="fc" onclick="setF('aprobado',this)">🟢 Aprobado</div>
+        <div class="fc" onclick="setF('observacion',this)">🟠 Obs.</div>
+      </div>
+      <div class="sec-hdr">
+        <span class="sec-title">Todos mis gastos</span>
+        <span class="sec-count" id="cnt-h">0</span>
+      </div>
+      <div class="gastos-list" id="list-h"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar" id="btm">PVI Control Operativo 2026</div>
+</div>
+
+<div class="dbg-wrap">
+  <div class="dbg">
+    <details open>
+      <summary>🔧 Diagnóstico</summary>
+      <div class="dbg-body" id="dbg">—</div>
+    </details>
+  </div>
+</div>
+
+<script>
+/* ── CONFIG ─────────────────────────────────────────────────── */
+const SHEET  = '1CQyRHmA99cfTar5kjvXgVvX9j6RKrTLUEHx-M5JhXyk';
+const APIKEY = 'AIzaSyBL_gicAJD3zZ8Ils_-t42VyDhShPg_brg';
+
+/*
+  ESTRUCTURA REAL DE GASTOS (confirmada del xlsx):
+  Fila 1-3: títulos  
+  Fila 4:   headers  A=MARCA TEMPORAL, B=CORREO, C=FECHA COMPRA, D=RESPONSABLE,
+                     E=NEGOCIO, F=TIPO GASTO, G=SUBCATEGORÍA, H=DESCRIPCIÓN,
+                     I=PROVEEDOR, J=MONTO($MXN), K=TIPO COMPROBANTE, L=FOTO,
+                     M=NOTAS ADICIONALES, N=SEMANA, O=⏰TARDÍO, P=📸ALERTA,
+                     Q=ESTADO, R=NOTAS ANA, S=FECHA REVISIÓN ANA, T=⏱SLA ANA
+  Fila 5:   Form/AUTO/ANA labels (SALTAR)
+  Fila 6+:  datos reales
+
+  Al pedir GASTOS!A4:T500:
+    índice 0 = fila 4 (headers)
+    índice 1 = fila 5 (Form labels — SALTAR)
+    índice 2+ = datos reales (fila 6+)
+
+  Columnas (0-based dentro del rango A-T):
+    A=0  B=1  C=2  D=3  E=4  F=5  G=6  H=7  I=8  J=9
+    K=10 L=11 M=12 N=13 O=14 P=15 Q=16 R=17 S=18 T=19
+*/
+const C = { fecha:2, resp:3, neg:4, tipo:5, sub:6, desc:7, monto:9, foto:11, estado:16, notas:17, tardio:14, sla:19 };
+
+const USERS = {
+  '2403': { name:'Carlos', saIdx:2 },  // E7 en SA = índice 2 del rango E5:H34
+  '1748': { name:'Jethro', saIdx:3 },  // E8 en SA = índice 3
+};
+const CRIT=5000, WARN=10000;
+
+/* ── STATE ──────────────────────────────────────────────────── */
+let U=null, ALL=[], WEEK=[], FONDO=0, SEM='', FINI=null, FFIN=null;
+let FILTRO='todos', LOG=[];
+
+/* ── PIN ────────────────────────────────────────────────────── */
+let pin='';
+function p(d){ if(pin.length>=4)return; pin+=d; dots(); if(pin.length===4)auth(); }
+function pDel(){ pin=pin.slice(0,-1); dots(); }
+function pClr(){ pin=''; dots(); }
+function dots(){ document.querySelectorAll('.dot').forEach((el,i)=>el.classList.toggle('on',i<pin.length)); }
+function auth(){
+  if(USERS[pin]){
+    U=USERS[pin];
+    document.getElementById('pin-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('tb-user').textContent=U.name;
+    loadAll();
+  } else {
+    document.getElementById('pin-err').textContent='PIN incorrecto';
+    setTimeout(()=>{pin='';dots();document.getElementById('pin-err').textContent='';},1200);
+  }
+}
+
+/* ── TABS ───────────────────────────────────────────────────── */
+function switchTab(t){
+  ['s','h'].forEach(id=>{
+    document.getElementById('tab-'+id).classList.toggle('active',id===t);
+    document.getElementById('tab-'+id+'-btn').classList.toggle('active',id===t);
+  });
+  if(t==='h'&&ALL.length>0&&document.getElementById('con-h').style.display==='none') renderHist();
+}
+
+/* ── API ────────────────────────────────────────────────────── */
+function log(s){ LOG.push(s); }
+
+async function api(range){
+  // UNFORMATTED_VALUE: fechas = número serial, montos = número puro (no "$4,500")
+  const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET}/values/${encodeURIComponent(range)}?key=${APIKEY}&valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER`;
+  log(`GET ${range}`);
+  const r=await fetch(url);
+  log(`  status: ${r.status}`);
+  if(!r.ok){
+    const b=await r.json().catch(()=>({}));
+    throw new Error(b.error?.message||'HTTP '+r.status);
+  }
+  const d=await r.json();
+  return d.values||[];
+}
+
+/* ── PARSE HELPERS ──────────────────────────────────────────── */
+function mxn(v){
+  if(v===null||v===undefined||v==='')return 0;
+  if(typeof v==='number')return v;  // ya es número puro con UNFORMATTED_VALUE
+  return parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0;
+}
+function fmt(n){ return '$'+Math.round(Math.abs(n||0)).toLocaleString('es-MX'); }
+
+// Sheets serial → JS Date (serial = días desde 30-dic-1899)
+function serialToDate(s){
+  if(!s&&s!==0)return null;
+  if(typeof s==='string'&&s.includes('/')){
+    // Por si viene como DD/MM/YYYY
+    const m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    return m?new Date(+m[3],+m[2]-1,+m[1]):null;
+  }
+  if(typeof s==='number'){
+    // Excel/Sheets serial: días desde 1900-01-01 (con bug de 1900-02-29)
+    const d=new Date(Date.UTC(1899,11,30));
+    d.setUTCDate(d.getUTCDate()+Math.floor(s));
+    return d;
+  }
+  return null;
+}
+function fmtDate(d){ return d?d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'}):'—'; }
+
+function gv(row,i){ return (i>=0&&i<row.length)?row[i]??'':''; }
+
+/* ── LOAD ───────────────────────────────────────────────────── */
+async function loadAll(){
+  LOG=[];
+  log(`=== ${U.name} | ${new Date().toLocaleString('es-MX')}`);
+
+  document.getElementById('err-s').innerHTML='';
+  document.getElementById('load-s').style.display='flex';
+  document.getElementById('con-s').style.display='none';
+  document.getElementById('ts-dot').className='ts-dot loading';
+
+  try {
+    /* 1. SEMANA_ACTIVA!E5:H34
+       Fila 0 (E5) = [semana_label, ?, inicio_fecha_serial, fin_fecha_serial]
+       Fila 2 (E7) = [fondo_carlos, ...]
+       Fila 3 (E8) = [fondo_jethro, ...]
+    */
+    const sa = await api('SEMANA_ACTIVA!E5:H34');
+    log(`SA rows: ${sa.length}`);
+    log(`SA[0]: ${JSON.stringify(sa[0])}`);
+    log(`SA[${U.saIdx}]: ${JSON.stringify(sa[U.saIdx])}`);
+
+    SEM   = String((sa[0]||[])[0]||'—');
+    FINI  = serialToDate((sa[0]||[])[2]);
+    FFIN  = serialToDate((sa[0]||[])[3]);
+    FONDO = mxn((sa[U.saIdx]||[])[0]);
+
+    log(`Semana: "${SEM}" | Ini: ${FINI} | Fin: ${FFIN} | Fondo: $${FONDO}`);
+
+    /* 2. GASTOS!A4:T500
+       idx 0 = fila 4 (headers)
+       idx 1 = fila 5 (Form/AUTO labels — OMITIR)
+       idx 2+ = datos reales (fila 6 en adelante)
+    */
+    const g = await api('GASTOS!A4:T500');
+    log(`GASTOS rows total: ${g.length}`);
+    log(`GASTOS[0] (headers): ${JSON.stringify((g[0]||[]).slice(0,6))}`);
+    log(`GASTOS[1] (labels):  ${JSON.stringify((g[1]||[]).slice(0,6))}`);
+    log(`GASTOS[2] (primer dato): ${JSON.stringify((g[2]||[]).slice(0,12))}`);
+
+    // Datos desde índice 2 (saltando headers y fila Form/AUTO)
+    const datos = g.slice(2);
+    log(`Datos a procesar: ${datos.length} filas`);
+
+    const nm = U.name.toLowerCase();
+    const parsed = [];
+
+    for(const row of datos){
+      const m = mxn(gv(row, C.monto));
+      if(!m) continue; // sin monto = fila vacía
+
+      let resp = String(gv(row, C.resp)).trim();
+
+      // Si la columna resp tiene el nombre exacto o parcial del usuario
+      if(!resp.toLowerCase().includes(nm)){
+        continue; // no es de este usuario
+      }
+
+      const fechaSerial = gv(row, C.fecha);
+      parsed.push({
+        fecha:  serialToDate(fechaSerial),
+        resp,
+        neg:    String(gv(row, C.neg))||'Sin negocio',
+        sub:    String(gv(row, C.sub)),
+        desc:   String(gv(row, C.desc))||'Sin descripción',
+        monto:  m,
+        estado: String(gv(row, C.estado))||'🟡 Pendiente',
+        notas:  String(gv(row, C.notas)),
+        tardio: String(gv(row, C.tardio)),
+        sla:    String(gv(row, C.sla)),
+      });
+    }
+
+    ALL = parsed;
+    log(`Mis registros: ${ALL.length}`);
+
+    // Semana activa
+    if(FINI && FFIN){
+      const ini=new Date(FINI); ini.setUTCHours(0,0,0,0);
+      const fin=new Date(FFIN); fin.setUTCHours(23,59,59,999);
+      WEEK = ALL.filter(r=>r.fecha&&r.fecha>=ini&&r.fecha<=fin);
+      log(`Semana (por fechas ${fmtDate(ini)}–${fmtDate(fin)}): ${WEEK.length}`);
+    } else {
+      // fallback: semana ISO actual
+      const wn=isoWeek(new Date());
+      WEEK = ALL.filter(r=>r.fecha&&isoWeek(r.fecha)===wn);
+      log(`Semana (por isoWeek ${wn}): ${WEEK.length}`);
+    }
+
+    renderSem();
+
+    document.getElementById('load-s').style.display='none';
+    document.getElementById('con-s').style.display='block';
+    document.getElementById('ts-dot').className='ts-dot';
+    document.getElementById('btm').textContent='Act. '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+
+  } catch(err){
+    log(`❌ ERROR: ${err.message}`);
+    document.getElementById('load-s').style.display='none';
+    document.getElementById('ts-dot').className='ts-dot err';
+    const is403=/403|permission|denied/i.test(err.message);
+    document.getElementById('err-s').innerHTML=`<div class="err-card">
+      <strong>❌ Error de conexión</strong>${err.message}
+      ${is403?'<div style="margin-top:8px;color:var(--dim)">El Sheet debe estar público: Compartir → Cualquier persona con el enlace → Lector</div>':''}
+    </div>`;
+  }
+
+  document.getElementById('dbg').textContent=LOG.join('\n');
+}
+
+/* ── RENDER SEMANA ──────────────────────────────────────────── */
+function renderSem(){
+  document.getElementById('sem-lbl').textContent=SEM;
+
+  const isAp=r=>/aprobado|🟢/i.test(r.estado);
+  const total    =WEEK.reduce((s,r)=>s+r.monto,0);
+  const aprobado =WEEK.filter(isAp).reduce((s,r)=>s+r.monto,0);
+  const pendiente=total-aprobado;
+  const disp     =FONDO-total;
+  const pct      =FONDO?Math.min(100,Math.round(total/FONDO*100)):0;
+
+  const lvl=disp<CRIT?'crit':disp<WARN?'warn':'ok';
+  const sem=disp<CRIT?'🔴':disp<WARN?'🟡':'🟢';
+
+  document.getElementById('saldo-card').className='saldo-card '+lvl;
+  const nd=document.getElementById('sc-disp');
+  nd.className='sc-num '+lvl;
+  nd.textContent=fmt(disp);
+  document.getElementById('sc-fondo').textContent=fmt(FONDO);
+  document.getElementById('sc-sem').textContent=sem;
+
+  const bar=document.getElementById('prog');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>90?'var(--red)':pct>70?'var(--yellow)':'var(--amber)';
+
+  document.getElementById('st-g').textContent=fmt(total);
+  document.getElementById('st-a').textContent=fmt(aprobado);
+  document.getElementById('st-p').textContent=fmt(pendiente);
+
+  const alt=document.getElementById('sc-alt');
+  if(disp<CRIT) alt.innerHTML=`<div class="i-alert ia-crit">⚠️ Saldo crítico — notifica a Roberto urgente</div>`;
+  else if(disp<WARN) alt.innerHTML=`<div class="i-alert ia-warn">⚡ Saldo bajo — considera solicitar reposición</div>`;
+  else alt.innerHTML=`<div class="i-alert ia-ok">✅ Saldo en orden esta semana</div>`;
+
+  document.getElementById('cnt-s').textContent=WEEK.length;
+  document.getElementById('list-s').innerHTML=
+    WEEK.length?[...WEEK].reverse().map(giEl).join('')
+    :`<div class="empty">📋 Sin gastos registrados esta semana</div>`;
+}
+
+/* ── RENDER HISTORIAL ───────────────────────────────────────── */
+function renderHist(){
+  document.getElementById('load-h').style.display='none';
+  document.getElementById('con-h').style.display='block';
+  const isAp=r=>/aprobado|🟢/i.test(r.estado);
+  const total=ALL.reduce((s,r)=>s+r.monto,0);
+  const ap=ALL.filter(isAp).reduce((s,r)=>s+r.monto,0);
+  document.getElementById('hk-t').textContent=fmt(total);
+  document.getElementById('hk-a').textContent=fmt(ap);
+  document.getElementById('hk-p').textContent=fmt(total-ap);
+  document.getElementById('hk-n').textContent=ALL.length;
+  applyF();
+}
+
+/* ── FILTROS ────────────────────────────────────────────────── */
+function setF(val,el){
+  FILTRO=val;
+  el.closest('.filter-row').querySelectorAll('.fc').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  applyF();
+}
+function applyF(){
+  let rows=[...ALL].reverse();
+  if(FILTRO!=='todos') rows=rows.filter(r=>{
+    if(FILTRO==='aprobado')   return /aprobado|🟢/i.test(r.estado);
+    if(FILTRO==='revisado')   return /revisado|🔵/i.test(r.estado);
+    if(FILTRO==='observacion')return /observaci|🟠/i.test(r.estado);
+    if(FILTRO==='pendiente')  return /pendiente|🟡/i.test(r.estado);
+    return true;
+  });
+  document.getElementById('cnt-h').textContent=rows.length;
+  document.getElementById('list-h').innerHTML=rows.length?rows.map(giEl).join('')
+    :`<div class="empty">🔍 Sin resultados para este filtro</div>`;
+}
+
+/* ── GASTO ITEM ─────────────────────────────────────────────── */
+function estOf(e){
+  if(/aprobado|🟢/i.test(e)) return{cls:'aprobado',bc:'b-ap',icon:'🟢',txt:'Aprobado'};
+  if(/revisado|🔵/i.test(e)) return{cls:'revisado',bc:'b-rv',icon:'🔵',txt:'Revisado'};
+  if(/observaci|🟠/i.test(e))return{cls:'observacion',bc:'b-ob',icon:'🟠',txt:'Observación'};
+  return{cls:'pendiente',bc:'b-pe',icon:'🟡',txt:'Pendiente'};
+}
+function giEl(r){
+  const e=estOf(r.estado);
+  const tard=r.tardio.includes('TARDÍO')?'<span style="color:var(--yellow);font-size:10px"> ⏰</span>':'';
+  const nota=r.notas?`<div style="margin-top:6px;font-size:11px;color:var(--yellow);background:rgba(234,179,8,.07);padding:4px 8px;border-radius:6px">💬 ${r.notas}</div>`:'';
+  return `<div class="gi ${e.cls} fu">
+  <div class="gi-icon">${e.icon}</div>
+  <div class="gi-body">
+    <div class="gi-top">
+      <div class="gi-desc">${r.desc}${tard}</div>
+      <div class="gi-monto">${fmt(r.monto)}</div>
+    </div>
+    <div class="gi-bot">
+      <span class="gi-neg">${r.neg}${r.sub?' · '+r.sub:''} · ${fmtDate(r.fecha)}</span>
+      <span class="gi-badge ${e.bc}">${e.txt}</span>
+    </div>${nota}
+  </div>
+</div>`;
+}
+
+/* ── ISO WEEK ───────────────────────────────────────────────── */
+function isoWeek(d){
+  const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=dt.getUTCDay()||7;
+  dt.setUTCDate(dt.getUTCDate()+4-day);
+  const y0=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+  return Math.ceil((((dt-y0)/864e5)+1)/7);
+}
+</script>
+</body>
+</html>
